@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FSLBS E-comanda — Fazenda São Luiz da Boa Sorte</title>
+<style>
+:root{
+  --navy:#14223f;--navy2:#1d3155;--cream:#f5f0e7;--paper:#fffdf9;
+  --line:#e5ddd0;--green:#68775d;--green2:#e7ede3;--red:#ad5a49;
+  --gold:#b28c60;--gold2:#eee2d0;--text:#252a35;--muted:#77746d;
+  --shadow:0 12px 32px rgba(24,35,59,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#f4efe5,#faf8f2)}
+.login-box{width:min(480px,100%);background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 25px 70px #14223f18}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo img{width:130px;height:160px;object-fit:contain;display:block;margin:0 auto 10px}
+.login-logo small{color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.login-logo em{display:block;color:var(--muted);font-family:Georgia,serif;margin-top:9px}
+.login-box h1{text-align:center;font:500 28px Georgia,serif;color:var(--navy);margin:12px 0 6px}
+.login-subtitle{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.login-options{display:grid;gap:12px}
+.login-option{width:100%;background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;text-align:left;color:var(--text);transition:.2s}
+.login-option:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:var(--shadow)}
+.login-option strong{display:block;color:var(--navy);margin-bottom:4px}.login-option small{color:var(--muted)}.login-icon{font-size:24px}
+.login-form{margin-top:8px}.login-form h2{font:500 22px Georgia,serif;color:var(--navy)}
+.back-login{border:0;background:transparent;color:var(--navy);padding:4px 0}
+.login-button{width:100%;margin-top:8px;background:var(--navy);color:#fff;border:0;border-radius:10px;padding:12px}
+.login-demo{margin-top:18px;padding:12px;background:var(--gold2);border-radius:11px;font-size:12px;line-height:1.65;color:#625b50}
+
+/* App shell */
+#app{min-height:100vh}.app-shell{min-height:100vh;display:flex}
+.sidebar{width:235px;position:fixed;inset:0 auto 0 0;background:linear-gradient(180deg,#13213d,#1a2c4b);color:#fff;padding:20px 14px;display:flex;flex-direction:column;z-index:20}
+.brand{text-align:center;padding:2px 8px 20px;border-bottom:1px solid #ffffff18}
+.brand img{
+  width:92px;
+  height:112px;
+  object-fit:contain;
+  display:block;
+  margin:0 auto 9px;
+  background:transparent;
+  filter:brightness(0) invert(1);
+  opacity:1;
+}
+.brand-title{font:500 15px Georgia,serif;line-height:1.15}.brand-sub{font-size:9px;letter-spacing:1.7px;color:#d8c5a6;margin-top:6px;text-transform:uppercase}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px;margin-top:18px;overflow:auto}
+.sidebar-nav button{display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#e9edf4;border-radius:10px;padding:11px 13px;text-align:left;font-size:13px}
+.sidebar-nav button:hover{background:#ffffff12}.sidebar-nav button.active{background:#ffffff20;box-shadow:inset 3px 0 0 var(--gold);color:#fff}
+.nav-ico{width:23px;text-align:center;font-size:17px}.nav-badge{margin-left:auto;background:#bd4f50;border-radius:20px;padding:2px 7px;font-size:10px}
+.sidebar-bottom{margin-top:auto;text-align:center;padding:18px 6px 4px;color:#c9b99f;font:italic 13px Georgia,serif;border-top:1px solid #ffffff18}
+.content{margin-left:235px;width:calc(100% - 235px);min-width:0}
+.topbar{height:82px;background:#fbf8f1;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:10}
+.top-brand{font:500 24px Georgia,serif;color:var(--navy)}.top-brand small{display:block;font:10px Arial,sans-serif;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-top:5px}
+.greeting{text-align:center}.greeting strong{display:block;font:italic 24px Georgia,serif;color:#17243e}.greeting small{color:var(--muted)}
+.profile{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}.avatar{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:bold}.logout-btn{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:20px;padding:8px 12px}
+
+main{max-width:1500px;margin:auto;padding:28px 28px 45px}.view{display:none}.view.active{display:block;animation:fade .2s ease}@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-title{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}.page-title h1{margin:0;font:500 31px Georgia,serif;color:var(--navy)}.page-title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:25px}.quick-card{min-height:150px;border-radius:15px;padding:22px;color:var(--navy);background:#f0eae0;border:1px solid #e5ddd0;display:flex;flex-direction:column;justify-content:space-between}.quick-card.primary{background:var(--navy);color:#fff}.quick-card.green{background:#707f65;color:#fff}.quick-card.red{background:#ad6a52;color:#fff}.quick-card h2{font:600 21px Georgia,serif;margin:8px 0 3px}.quick-card p{font-size:12px;margin:0;opacity:.82}.quick-arrow{align-self:flex-end;width:31px;height:31px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center}
+.dashboard-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:22px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 13px}.section-head h2{font:500 21px Georgia,serif;color:var(--navy);margin:0}.section-head button{background:transparent;border:0;color:var(--navy);font-size:12px}
+.searchbar{display:flex;gap:10px;margin-bottom:14px}.searchbar input{flex:1}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.filter{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 11px;font-size:11px;color:var(--muted)}.filter.active{background:var(--navy);color:#fff}
+.room-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.room-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;min-height:170px;position:relative;box-shadow:0 5px 18px #14223f06}.room-card:hover{box-shadow:var(--shadow)}.room-status{display:inline-flex;align-items:center;gap:6px;background:var(--green2);color:#41613a;border-radius:20px;padding:5px 8px;font-size:10px;font-weight:bold}.room-status i{width:8px;height:8px;border-radius:50%;background:#2e8c43}.room-status.free{background:#eeeae4;color:#777}.room-status.free i{background:#bbb}.room-status.out{background:#f7e7d1;color:#9a5b16}.room-status.out i{background:#ed9d16}.room-number{font:600 27px Georgia,serif;color:var(--navy);margin:12px 0 2px}.room-type{font-size:10px;color:var(--muted)}.room-line{font-size:12px;margin-top:9px;color:#4b4d55}.room-total{font-weight:bold;color:var(--green);margin-top:9px}.room-go{position:absolute;right:13px;bottom:13px;width:30px;height:30px;border-radius:50%;border:1px solid var(--navy);background:#fff;color:var(--navy)}
+.side-panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:var(--shadow)}.side-photo{
+  height:390px;
+  background:
+    url("fazenda-aquarela.jpg") center center/cover no-repeat;
+  border-bottom:1px solid var(--line);
+}
+.summary{background:var(--paper);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:16px}.summary-title{padding:13px 16px;font-size:11px;font-weight:bold;color:var(--navy);letter-spacing:1px;border-bottom:1px solid var(--line)}.summary-grid{display:grid;grid-template-columns:1fr 1fr}.summary-item{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.summary-item:nth-child(2n){border-right:0}.summary-item:nth-last-child(-n+2){border-bottom:0}.summary-item small{display:block;color:var(--muted);font-size:10px}.summary-item b{display:block;color:var(--navy);font:600 19px Georgia,serif;margin-top:7px}
+
+/* generic pages */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:17px;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+h1,h2,h3{font-family:Georgia,serif;color:var(--navy);font-weight:500}
+button,.btn{border:0;border-radius:9px;padding:10px 13px;background:var(--navy);color:#fff}.btn.green{background:var(--green)}.btn.red{background:var(--red)}.btn.light{background:#eee9df;color:var(--text)}
+input,select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--text);outline:none}input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px #b28c6018}
+.field{margin-bottom:12px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}.notice{background:var(--gold2);border-radius:10px;padding:11px;margin:10px 0;font-size:13px;color:#615a4f}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}.right{text-align:right}.money{font-size:20px;font-weight:bold;color:var(--green)}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{color:var(--muted);font-size:11px;text-transform:uppercase}
+.pill{display:inline-block;padding:4px 8px;border-radius:99px;font-size:11px;background:var(--green2);color:#236a3c}.pill.gray{background:#eee;color:#666}.pill.red{background:#f7dfdd;color:#9b3732}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:18px;z-index:30}.modal.open{display:flex}.modalbox{background:var(--paper);border-radius:16px;padding:20px;width:min(650px,100%);max-height:90vh;overflow:auto}.toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:12px 15px;border-radius:10px;display:none;z-index:40}
+
+@media(max-width:1100px){.quick-grid{grid-template-columns:repeat(2,1fr)}.dashboard-layout{grid-template-columns:1fr}.side-panel{display:none}.room-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.side-photo{height:300px}.sidebar{width:72px;padding:12px 8px}.brand-title,.brand-sub,.sidebar-bottom{display:none}.brand img{width:52px;height:65px}.sidebar-nav button{justify-content:center;padding:12px 7px}.sidebar-nav button span:not(.nav-ico){display:none}.nav-badge{position:absolute;margin-left:28px;margin-top:-18px}.content{margin-left:72px;width:calc(100% - 72px)}.topbar{height:70px;padding:0 15px}.top-brand{font-size:18px}.greeting{display:none}.profile>div:not(.avatar),.profile .logout-btn{display:none}main{padding:22px 14px}.room-grid{grid-template-columns:1fr}.grid,.grid2{grid-template-columns:1fr}.quick-grid{grid-template-columns:1fr 1fr}.quick-card{min-height:130px;padding:17px}.quick-card h2{font-size:18px}}
+@media(max-width:500px){.quick-grid{grid-template-columns:1fr}.login-box{padding:26px 20px}.page-title h1{font-size:26px}.top-brand small{font-size:8px}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo-transparente.png" alt="Fazenda São Luiz da Boa Sorte">
+      <small>FSLBS E-comanda</small>
+      <em>uma fazenda que hospeda</em>
+    </div>
+    <h1>Acesso ao sistema</h1>
+    <div class="login-subtitle">Selecione como deseja entrar</div>
+
+    <div class="login-options">
+      <button class="login-option" onclick="showStaffLogin()">
+        <span class="login-icon">👩‍💼</span><strong>Funcionário</strong>
+        <small>Recepção, administração ou garçom</small>
+      </button>
+      <button class="login-option" onclick="showGuestAccess()">
+        <span class="login-icon">🏨</span><strong>Hóspede</strong>
+        <small>Consultar consumos do quarto</small>
+      </button>
+    </div>
+
+    <div id="staffLogin" class="login-form" style="display:none">
+      <button class="back-login" onclick="backToLogin()">← Voltar</button>
+      <h2>Login de funcionário</h2>
+      <div class="field"><label>E-mail</label><input id="loginEmail" type="email" placeholder="seuemail@fslbs.com"></div>
+      <div class="field"><label>Senha</label><input id="loginPassword" type="password" placeholder="Senha"></div>
+      <button class="login-button" onclick="loginStaff()">Entrar</button>
+      <div class="login-demo"><strong>Login de demonstração</strong><br>Recepção: <b>recepcao@fslbs.com</b><br>Garçom: <b>garcom@fslbs.com</b><br>Senha: <b>123456</b></div>
+    </div>
+
+    <div id="guestAccess" class="login-form" style="display:none">
+      <button class="back-login" onclick="backToLogin()">← Voltar</button>
+      <h2>Acesso do hóspede</h2>
+      <p class="login-subtitle">Selecione o quarto vinculado ao seu cartão.</p>
+      <div class="field"><label>Quarto</label><select id="guestLoginRoom"></select></div>
+      <button class="login-button" onclick="enterGuestDemo()">Entrar como hóspede</button>
+      <button class="login-button" style="margin-top:10px;background:#68775d" onclick="startQRScanner()">📷 Ler QR Code</button>
+      <div class="login-demo">No MVP, o acesso pode ser testado selecionando o quarto. A leitura real pela câmera será adicionada na próxima etapa.</div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="logo-transparente.png" alt="Fazenda São Luiz da Boa Sorte">
+        <div class="brand-title">Fazenda São Luiz<br>da Boa Sorte</div>
+        <div class="brand-sub">uma fazenda que hospeda</div>
+      </div>
+      <nav id="nav" class="sidebar-nav">
+        <button data-v="dashboard"><span class="nav-ico">⌂</span><span>Início</span></button>
+        <button data-v="checkin"><span class="nav-ico">♙</span><span>Check-in</span></button>
+        <button data-v="comandas"><span class="nav-ico">▤</span><span>Comandas</span></button>
+        <button data-v="garcom"><span class="nav-ico">♧</span><span>Garçom</span></button>
+        <button data-v="hospede"><span class="nav-ico">♙</span><span>Hóspedes</span></button>
+        <button data-v="contestacoes"><span class="nav-ico">△</span><span>Contestações</span><span id="claimBadge" class="nav-badge">0</span></button>
+        <button data-v="checkout"><span class="nav-ico">⇥</span><span>Check-out</span></button>
+        <button data-v="cartoes"><span class="nav-ico">▱</span><span>Cartões</span></button>
+        <button data-v="produtos"><span class="nav-ico">◇</span><span>Produtos</span></button>
+      </nav>
+      <div class="sidebar-bottom">uma fazenda que hospeda</div>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <div class="top-brand">FSLBS E-comanda<small>Tecnologia a serviço da sua experiência</small></div>
+        <div class="greeting"><strong>Bom dia!</strong><small id="todayLabel"></small></div>
+        <div class="profile">
+          <div><b id="roleLabel">Recepção / Administração</b><br><span>Fazenda São Luiz da Boa Sorte</span></div>
+          <div class="avatar">SG</div>
+          <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="dashboard" class="view active">
+          <div class="page-title"><div><h1>Início</h1><p>Visão geral da operação da Fazenda.</p></div></div>
+
+          <div class="quick-grid">
+            <div class="quick-card primary" onclick="go('checkin')" style="cursor:pointer"><div>♙＋</div><div><h2>Check-in</h2><p>Cadastrar hóspedes e ativar a comanda</p></div><span class="quick-arrow">→</span></div>
+            <div class="quick-card" onclick="go('comandas')" style="cursor:pointer"><div>▤</div><div><h2>Comandas</h2><p>Consultar e gerenciar comandas ativas</p></div><span class="quick-arrow">→</span></div>
+            <div class="quick-card green" onclick="go('checkout')" style="cursor:pointer"><div>⇥</div><div><h2>Check-out</h2><p>Finalizar hospedagens e fechar contas</p></div><span class="quick-arrow">→</span></div>
+            <div class="quick-card red" onclick="go('contestacoes')" style="cursor:pointer"><div>△</div><div><h2>Contestações</h2><p>Ver e resolver itens contestados</p></div><span class="quick-arrow">→</span></div>
+          </div>
+
+          <div class="dashboard-layout">
+            <div>
+              <div class="section-head"><h2>Hospedagens de hoje</h2><button onclick="go('checkin')">Ver todas as hospedagens →</button></div>
+              <div class="searchbar"><input id="roomSearch" placeholder="⌕  Buscar por quarto ou nome..." oninput="renderDashboardRooms()"></div>
+              <div class="filters"><button class="filter active" onclick="setRoomFilter('all',this)">Todos</button><button class="filter" onclick="setRoomFilter('occupied',this)">● Ocupado</button><button class="filter" onclick="setRoomFilter('out',this)">● Check-out hoje</button><button class="filter" onclick="setRoomFilter('free',this)">● Disponível</button></div>
+              <div id="dashRooms" class="room-grid"></div>
+            </div>
+            <div>
+              <div class="summary">
+                <div class="summary-title">RESUMO DO DIA</div>
+                <div class="summary-grid">
+                  <div class="summary-item"><small>Hóspedes hospedados</small><b id="dGuests">0</b></div>
+                  <div class="summary-item"><small>Comandas abertas</small><b id="dOrders">0</b></div>
+                  <div class="summary-item"><small>Consumo hoje</small><b id="dRevenue">R$ 0,00</b></div>
+                  <div class="summary-item"><small>Contestações</small><b id="dClaims">0</b></div>
+                </div>
+              </div>
+              <div class="side-panel"><div class="side-photo"></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="checkin" class="view">
+          <div class="page-title"><div><h1>Novo check-in</h1><p>Cadastre a hospedagem e ative a comanda do quarto.</p></div></div>
+          <div class="card"><div class="grid2">
+            <div class="field"><label>Quarto</label><select id="ciRoom"></select></div>
+            <div class="field"><label>Cartão permanente</label><input id="ciCard" disabled></div>
+            <div class="field"><label>Data de entrada</label><input id="ciIn" type="date"></div>
+            <div class="field"><label>Data de saída</label><input id="ciOut" type="date"></div>
+            <div class="field"><label>Hóspede titular</label><input id="ciName" placeholder="Nome completo"></div>
+            <div class="field"><label>Quantidade de hóspedes</label><input id="ciCount" type="number" min="1" value="2"></div>
+            <div class="field"><label>Hóspedes / dependentes</label><input id="ciOthers" placeholder="Separe por vírgulas"></div>
+            <div class="field"><label>Observações</label><input id="ciObs" placeholder="Opcional"></div>
+          </div><div class="notice">O QR Code do cartão é permanente e já pertence ao quarto. O check-in cria uma nova hospedagem e uma nova comanda.</div><button class="btn green" onclick="createCheckin()">Confirmar check-in</button></div>
+        </section>
+
+        <section id="comandas" class="view"><div class="page-title"><div><h1>Comandas</h1><p>Consumos ativos por hospedagem.</p></div></div><div class="card"><div id="orders"></div></div></section>
+
+        <section id="garcom" class="view"><div class="page-title"><div><h1>Modo Garçom</h1><p>Lance consumos de forma rápida e simples.</p></div></div>
+          <div class="card"><h3>1. Identificar cartão</h3><div class="grid2"><div class="field"><label>Quarto</label><select id="waiterRoom"></select></div><div><button onclick="openWaiter()">Abrir comanda</button></div></div><div class="notice">Nesta primeira versão, a leitura é simulada pela seleção do cartão. A câmera será adicionada na próxima etapa.</div></div><div id="waiterPanel"></div>
+        </section>
+
+        <section id="hospede" class="view"><div class="page-title"><div><h1>Área do hóspede</h1><p>Consulte e conteste os consumos vinculados ao quarto.</p></div></div><div class="card"><h3>Consultar comanda pelo cartão</h3><div class="grid2"><div class="field"><label>Cartão / quarto</label><select id="guestRoom"></select></div><div><button onclick="openGuest()">Consultar</button></div></div><div id="guestPanel"></div></div></section>
+
+        <section id="contestacoes" class="view"><div class="page-title"><div><h1>Contestações</h1><p>Analise os itens não reconhecidos pelos hóspedes.</p></div></div><div class="card" id="claims"></div></section>
+
+        <section id="checkout" class="view"><div class="page-title"><div><h1>Check-out</h1><p>Finalize hospedagens e libere os cartões.</p></div></div><div class="card" id="checkoutList"></div></section>
+
+        <section id="cartoes" class="view"><div class="page-title"><div><h1>Cartões permanentes</h1><p>Cartões vinculados aos quartos.</p></div></div><div class="grid" id="cards"></div></section>
+
+        <section id="produtos" class="view"><div class="page-title"><div><h1>Produtos</h1><p>Gerencie o cardápio da e-comanda.</p></div></div><div class="grid2">
+          <div class="card"><h3>Novo produto</h3><div class="field"><label>Nome</label><input id="pName"></div><div class="field"><label>Categoria</label><input id="pCat" placeholder="Bebida, comida..."></div><div class="field"><label>Preço</label><input id="pPrice" type="number" step=".01"></div><button onclick="addProduct()">Adicionar</button></div>
+          <div class="card"><h3>Cardápio cadastrado</h3><div id="productList"></div></div>
+        </div></section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal"><div class="modalbox" id="modalBox"></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const ROOMS=["101","102","103","201","202","203","204","205","206","207","208","209"];
+const defaultProducts=[
+{id:"p1",name:"Água",cat:"Bebidas",price:8},{id:"p2",name:"Refrigerante",cat:"Bebidas",price:8},
+{id:"p3",name:"Café",cat:"Bebidas",price:9},{id:"p4",name:"Caipirinha",cat:"Bebidas",price:22},
+{id:"p5",name:"Porção de batata",cat:"Comidas",price:35},{id:"p6",name:"Sanduíche",cat:"Comidas",price:28}
+];
+const KEY="fslbs_ecomanda_mvp_v1";
+let db=JSON.parse(localStorage.getItem(KEY)||"null")||{rooms:ROOMS.map(r=>({room:r,card:"C-"+r})),stays:[],products:defaultProducts,claims:[]};
+let currentRole=null,currentGuestRoom=null,roomFilter="all";
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function money(n){return "R$ "+Number(n||0).toFixed(2).replace(".",",")}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2200)}
+function activeStay(room){return db.stays.find(s=>s.room===room&&s.active)}
+function total(s){return(s.items||[]).reduce((a,i)=>a+(i.status==="Estornado"?0:i.price*i.qty),0)}
+function go(v){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));let t=document.getElementById(v);if(t)t.classList.add("active");document.querySelectorAll(".sidebar-nav button").forEach(x=>x.classList.toggle("active",x.dataset.v===v));renderAll()}
+document.querySelectorAll(".sidebar-nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+function fillSelect(id,onlyActive=false){
+ let el=document.getElementById(id);if(!el)return;
+ let arr=ROOMS.filter(r=>!onlyActive||activeStay(r));
+ el.innerHTML=arr.length?arr.map(r=>`<option value="${r}">Quarto ${r} · Cartão C-${r}</option>`).join(""):"<option>Nenhuma opção disponível</option>";
+}
+function renderAll(){
+ fillSelect("ciRoom");fillSelect("waiterRoom",true);fillSelect("guestRoom",true);
+ let d=new Date(),iso=d.toISOString().slice(0,10);
+ let ciIn=document.getElementById("ciIn");if(ciIn&&!ciIn.value)ciIn.value=iso;
+ let ciRoom=document.getElementById("ciRoom");
+ if(ciRoom){ciRoom.onchange=()=>document.getElementById("ciCard").value="C-"+ciRoom.value;document.getElementById("ciCard").value="C-"+ciRoom.value}
+ let active=db.stays.filter(s=>s.active),guests=active.reduce((a,s)=>a+Number(s.count||1),0),rev=active.reduce((a,s)=>a+total(s),0);
+ document.getElementById("dGuests").textContent=guests;document.getElementById("dOrders").textContent=active.length;
+ document.getElementById("dRevenue").textContent=money(rev);document.getElementById("dClaims").textContent=db.claims.filter(c=>c.status==="Pendente").length;
+ document.getElementById("claimBadge").textContent=db.claims.filter(c=>c.status==="Pendente").length;
+ const hour=d.getHours();
+let greeting;
+if(hour<12){
+  greeting="Bom dia!";
+}else if(hour<18){
+  greeting="Boa tarde!";
+}else{
+  greeting="Boa noite!";
+}
+const greetingEl=document.querySelector(".greeting strong");
+if(greetingEl) greetingEl.textContent=greeting;
+document.getElementById("todayLabel").textContent=d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
+ renderDashboardRooms();renderOrders();renderClaims();renderCheckout();renderCards();renderProducts();
+}
+function setRoomFilter(f,btn){roomFilter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));btn.classList.add("active");renderDashboardRooms()}
+function renderDashboardRooms(){
+ let q=(document.getElementById("roomSearch")?.value||"").toLowerCase();
+ let arr=ROOMS.map(r=>({room:r,stay:activeStay(r)})).filter(x=>{
+   let s=x.stay,match=!q||x.room.includes(q)||(s&&s.name.toLowerCase().includes(q));
+   let out=s&&s.out&&s.out===new Date().toISOString().slice(0,10);
+   let f=roomFilter==="all"||(roomFilter==="occupied"&&s&&!out)||(roomFilter==="out"&&out)||(roomFilter==="free"&&!s);
+   return match&&f;
+ });
+ document.getElementById("dashRooms").innerHTML=arr.map(x=>{
+   let s=x.stay,out=s&&s.out===new Date().toISOString().slice(0,10);
+   return `<div class="room-card">
+     <span class="room-status ${!s?"free":out?"out":""}"><i></i>${!s?"Disponível":out?"Check-out hoje":"Ocupado"}</span>
+     <div class="room-number">${x.room}</div><div class="room-type">${s?"Hospedagem ativa":"Quarto disponível"}</div>
+     <div class="room-line">♙ ${s?s.name:"—"}</div>
+     <div class="room-line">⌑ ${s?s.in+" → "+s.out:"—"}</div>
+     <div class="room-total">${s?money(total(s)):"R$ 0,00"}</div>
+     <button class="room-go" onclick="${s?`openOrder('${x.room}')`:`go('checkin')`}">→</button>
+   </div>`
+ }).join("")||`<div class="card">Nenhum quarto encontrado.</div>`;
+}
+function createCheckin(){
+ let room=document.getElementById("ciRoom").value,name=document.getElementById("ciName").value.trim();
+ if(!name)return toast("Informe o hóspede titular.");if(activeStay(room))return toast("Este quarto já está ocupado.");
+ db.stays.push({id:"stay_"+Date.now(),room,card:"C-"+room,in:document.getElementById("ciIn").value,out:document.getElementById("ciOut").value,name,count:Number(document.getElementById("ciCount").value||1),others:document.getElementById("ciOthers").value,obs:document.getElementById("ciObs").value,active:true,items:[]});
+ save();toast("Check-in criado e comanda zerada.");go("comandas");
+}
+function openOrder(room){
+ let s=activeStay(room);if(!s)return;
+ document.getElementById("modalBox").innerHTML=`<button style="float:right;background:transparent;color:#777;font-size:24px" onclick="closeModal()">×</button><h2>Quarto ${room}</h2><p>${s.name} · ${s.count} hóspede(s)</p>
+ <table><thead><tr><th>Horário</th><th>Produto</th><th>Qtd.</th><th>Valor</th><th>Funcionário</th></tr></thead><tbody>${(s.items||[]).map(i=>`<tr><td>${i.time}</td><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price*i.qty)}</td><td>${i.staff}</td></tr>`).join("")||`<tr><td colspan="5">Nenhum consumo.</td></tr>`}</tbody></table><h3 class="right">Total: ${money(total(s))}</h3>`;
+ document.getElementById("modal").classList.add("open");
+}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function renderOrders(){
+ let a=db.stays.filter(s=>s.active);document.getElementById("orders").innerHTML=a.length?`<table><thead><tr><th>Quarto</th><th>Hóspede</th><th>Cartão</th><th>Consumo</th><th></th></tr></thead><tbody>${a.map(s=>`<tr><td><b>${s.room}</b></td><td>${s.name}</td><td>${s.card}</td><td>${money(total(s))}</td><td><button onclick="openOrder('${s.room}')">Abrir</button></td></tr>`).join("")}</tbody></table>`:"Nenhuma comanda aberta.";
+}
+function openWaiter(){
+ let room=document.getElementById("waiterRoom").value,s=activeStay(room);if(!s)return;
+ document.getElementById("waiterPanel").innerHTML=`<div class="card"><h2>Quarto ${room} · ${s.name}</h2><p>Total atual: <b>${money(total(s))}</b></p><div class="grid2"><div class="field"><label>Produto</label><select id="wProd">${db.products.map(p=>`<option value="${p.id}">${p.name} · ${money(p.price)}</option>`).join("")}</select></div><div class="field"><label>Quantidade</label><input id="wQty" type="number" min="1" value="1"></div><div class="field"><label>Funcionário</label><input id="wStaff" value="Garçom"></div><div class="field"><label>Local da venda</label><input id="wPlace" value="Restaurante"></div></div><button class="btn green" onclick="addConsumption('${room}')">Lançar consumo</button></div>`;
+}
+function addConsumption(room){
+ let s=activeStay(room),p=db.products.find(x=>x.id===document.getElementById("wProd").value),qty=Number(document.getElementById("wQty").value||1);if(!p)return;
+ s.items.push({id:"i_"+Date.now(),name:p.name,price:p.price,qty,time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),staff:document.getElementById("wStaff").value||"Garçom",place:document.getElementById("wPlace").value||"Não informado",status:"Normal"});
+ save();toast("Consumo lançado.");openWaiter();
+}
+function openGuest(){
+ let s=activeStay(document.getElementById("guestRoom").value);if(!s)return;
+ document.getElementById("guestPanel").innerHTML=`<div class="notice">Quarto ${s.room} · ${s.name}<br>Última atualização: ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div><table><thead><tr><th>Horário</th><th>Consumo</th><th>Valor</th><th></th></tr></thead><tbody>${(s.items||[]).map(i=>`<tr><td>${i.time}</td><td>${i.name} × ${i.qty}</td><td>${money(i.price*i.qty)}</td><td><button class="btn red" onclick="claimItem('${s.id}','${i.id}')">Não reconheço</button></td></tr>`).join("")||`<tr><td colspan="4">Nenhum consumo lançado.</td></tr>`}</tbody></table><h2 class="right">${money(total(s))}</h2>`;
+}
+function claimItem(stayId,itemId){
+ let s=db.stays.find(x=>x.id===stayId),i=s&&s.items.find(x=>x.id===itemId);if(!i)return;
+ if(db.claims.some(c=>c.itemId===itemId&&c.status==="Pendente"))return toast("Este consumo já está em análise.");
+ db.claims.push({id:"c_"+Date.now(),stayId,itemId,room:s.room,guest:s.name,item:i.name,value:i.price*i.qty,status:"Pendente",created:new Date().toLocaleString("pt-BR")});
+ save();toast("Contestação registrada.");openGuest();
+}
+function renderClaims(){
+ let c=db.claims;document.getElementById("claims").innerHTML=c.length?`<table><thead><tr><th>Data</th><th>Quarto</th><th>Item</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>${c.map(x=>`<tr><td>${x.created}</td><td>${x.room}</td><td>${x.item}</td><td>${money(x.value)}</td><td>${x.status}</td><td>${x.status==="Pendente"?`<button onclick="resolveClaim('${x.id}',true)">Manter</button> <button class="btn red" onclick="resolveClaim('${x.id}',false)">Estornar</button>`:"—"}</td></tr>`).join("")}</tbody></table>`:"Nenhuma contestação.";
+}
+function resolveClaim(id,keep){
+ let c=db.claims.find(x=>x.id===id);if(!c)return;if(!keep){let s=db.stays.find(x=>x.id===c.stayId),i=s&&s.items.find(x=>x.id===c.itemId);if(i)i.status="Estornado"}c.status=keep?"Resolvida · mantido":"Resolvida · estornado";save();toast("Contestação resolvida.");
+}
+function renderCheckout(){
+ let a=db.stays.filter(s=>s.active);document.getElementById("checkoutList").innerHTML=a.length?`<table><thead><tr><th>Quarto</th><th>Hóspede</th><th>Período</th><th>Total</th><th></th></tr></thead><tbody>${a.map(s=>`<tr><td>${s.room}</td><td>${s.name}</td><td>${s.in} → ${s.out}</td><td><b>${money(total(s))}</b></td><td><button class="btn green" onclick="checkout('${s.id}')">Finalizar</button></td></tr>`).join("")}</tbody></table>`:"Nenhum check-out pendente.";
+}
+function checkout(id){
+ let s=db.stays.find(x=>x.id===id);if(!s)return;if(db.claims.some(c=>c.stayId===id&&c.status==="Pendente"))return toast("Resolva as contestações antes do check-out.");
+ s.active=false;s.closedAt=new Date().toLocaleString("pt-BR");save();toast("Check-out finalizado. Cartão liberado.");
+}
+function renderCards(){
+ document.getElementById("cards").innerHTML=ROOMS.map(r=>{let s=activeStay(r);return `<div class="card"><div class="row"><h3>Quarto ${r}</h3><span class="pill ${s?"":"gray"}">${s?"Em uso":"Livre"}</span></div><p>Cartão permanente: <b>C-${r}</b></p><div style="width:160px;height:160px;background:#eee;display:flex;align-items:center;justify-content:center;margin:auto">QR</div><br><button class="btn light" onclick="printCard('${r}')">Imprimir cartão</button></div>`}).join("");
+}
+function printCard(room){
+ let w=window.open("","_blank");w.document.write(`<html><body style="font-family:Arial;text-align:center;padding:30px"><img src="logo-transparente.png" style="width:130px"><h2>FSLBS E-comanda</h2><p>Quarto ${room}</p><div style="width:260px;height:260px;background:#eee;display:flex;align-items:center;justify-content:center;margin:auto">QR</div><p>Apresente este cartão para registrar e consultar seus consumos.</p><i>uma fazenda que hospeda</i></body></html>`);w.print();
+}
+function addProduct(){
+ let n=document.getElementById("pName").value.trim(),c=document.getElementById("pCat").value.trim(),p=Number(document.getElementById("pPrice").value);if(!n||!p)return toast("Informe nome e preço.");
+ db.products.push({id:"p_"+Date.now(),name:n,cat:c||"Outros",price:p});save();document.getElementById("pName").value="";document.getElementById("pPrice").value="";toast("Produto adicionado.");
+}
+function renderProducts(){document.getElementById("productList").innerHTML=db.products.map(p=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><span>${p.name} <small>· ${p.cat}</small></span><b>${money(p.price)}</b></div>`).join("")}
+
+/* Login */
+function showStaffLogin(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="block";document.getElementById("guestAccess").style.display="none"}
+function showGuestAccess(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="block";fillGuestLoginRooms()}
+function backToLogin(){document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="none";document.querySelector(".login-options").style.display="grid"}
+function fillGuestLoginRooms(){let s=document.getElementById("guestLoginRoom"),a=ROOMS.filter(r=>activeStay(r));s.innerHTML=a.length?a.map(r=>`<option value="${r}">Quarto ${r} · Cartão C-${r}</option>`).join(""):"<option>Nenhum quarto com hospedagem ativa</option>"}
+function loginStaff(){
+ let email=document.getElementById("loginEmail").value.trim().toLowerCase(),password=document.getElementById("loginPassword").value;if(!email||!password)return toast("Informe e-mail e senha.");if(password!=="123456")return toast("Senha incorreta.");
+ if(email==="recepcao@fslbs.com"){currentRole="recepcao";enterSystem("Recepção / Administração","dashboard");return}
+ if(email==="garcom@fslbs.com"){currentRole="garcom";enterSystem("Garçom","garcom");return}
+ toast("E-mail não cadastrado.")
+}
+function enterSystem(label,firstView){
+ document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent=label;configureAccess();go(firstView)
+}
+function configureAccess(){
+ let allowed=currentRole==="recepcao"?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]:["garcom"];
+ document.querySelectorAll("#nav button").forEach(btn=>btn.style.display=allowed.includes(btn.dataset.v)?"":"none")
+}
+function enterGuestDemo(){
+ let room=document.getElementById("guestLoginRoom").value;if(!activeStay(room))return toast("Este quarto não possui hospedagem ativa.");currentRole="hospede";currentGuestRoom=room;
+ document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;
+ document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");go("hospede");setTimeout(()=>{let s=document.getElementById("guestRoom");if(s){s.value=room;openGuest()}},50)
+}
+function startQRScanner(){toast("Leitura pela câmera será adicionada na próxima etapa.")}
+function logout(){
+ currentRole=null;currentGuestRoom=null;document.getElementById("app").style.display="none";document.getElementById("loginScreen").style.display="flex";
+ document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="none";document.querySelector(".login-options").style.display="grid";
+ document.getElementById("loginEmail").value="";document.getElementById("loginPassword").value="";
+ document.querySelectorAll("#nav button").forEach(btn=>btn.style.display="")
+}
+renderAll();
+
+setInterval(()=>{
+  const d=new Date();
+  const hour=d.getHours();
+  let greeting;
+  if(hour<12){
+    greeting="Bom dia!";
+  }else if(hour<18){
+    greeting="Boa tarde!";
+  }else{
+    greeting="Boa noite!";
+  }
+  const el=document.querySelector(".greeting strong");
+  if(el) el.textContent=greeting;
+},60000);
+</script>
+</body>
+</html>
