@@ -99,7 +99,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
     white-space:normal;
     line-height:1.15;
   }
-  .sidebar-nav button span:not(.nav-ico){display:inline}
+  .sidebar-nav button .nav-label{display:block!important;visibility:visible!important;opacity:1!important}
   .nav-ico{width:18px;min-width:18px;font-size:14px}
   .nav-badge{position:static;margin-left:auto}
   .content{margin-left:138px;width:calc(100% - 138px)}
@@ -148,6 +148,15 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 .qr-permission{font-size:11px;color:#77746d;line-height:1.5;margin-top:8px}
 .card-qr{width:180px;height:180px;margin:15px auto;display:grid;place-items:center;background:#fff;border-radius:8px}
 
+
+/* Menu mobile — rótulos sempre visíveis */
+@media(max-width:800px){
+  .sidebar{width:155px}
+  .content{margin-left:155px;width:calc(100% - 155px)}
+  .sidebar-nav button{display:flex!important;visibility:visible!important}
+  .sidebar-nav button .nav-label{display:block!important;visibility:visible!important;opacity:1!important;font-size:12px!important}
+}
+
 </style>
 </head>
 <body>
@@ -189,7 +198,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
       <div class="field"><label>Quarto</label><select id="guestLoginRoom"></select></div>
       <button class="login-button" onclick="enterGuestDemo()">Entrar como hóspede</button>
       <button class="login-button" style="margin-top:10px;background:#68775d" onclick="startQRScanner('login')">📷 Ler QR Code</button>
-      <div class="login-demo">No MVP, o acesso pode ser testado selecionando o quarto. A leitura real pela câmera será adicionada na próxima etapa.</div>
+      <div class="login-demo">Você pode selecionar o quarto ou usar a câmera para ler o QR Code do cartão.</div>
     </div>
   </div>
 </div>
@@ -203,15 +212,15 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
         <div class="brand-sub">uma fazenda que hospeda</div>
       </div>
       <nav id="nav" class="sidebar-nav">
-        <button data-v="dashboard"><span class="nav-ico">⌂</span><span>Início</span></button>
-        <button data-v="checkin"><span class="nav-ico">♙</span><span>Check-in</span></button>
-        <button data-v="comandas"><span class="nav-ico">▤</span><span>Comandas</span></button>
-        <button data-v="garcom"><span class="nav-ico">♧</span><span>Garçom</span></button>
-        <button data-v="hospede"><span class="nav-ico">♙</span><span>Hóspedes</span></button>
-        <button data-v="contestacoes"><span class="nav-ico">△</span><span>Contestações</span><span id="claimBadge" class="nav-badge">0</span></button>
-        <button data-v="checkout"><span class="nav-ico">⇥</span><span>Check-out</span></button>
-        <button data-v="cartoes"><span class="nav-ico">▱</span><span>Cartões</span></button>
-        <button data-v="produtos"><span class="nav-ico">◇</span><span>Produtos</span></button>
+        <button data-v="dashboard"><span class="nav-ico">⌂</span><span class="nav-label">Início</span></button>
+        <button data-v="checkin"><span class="nav-ico">♙</span><span class="nav-label">Check-in</span></button>
+        <button data-v="comandas"><span class="nav-ico">▤</span><span class="nav-label">Comandas</span></button>
+        <button data-v="garcom"><span class="nav-ico">♧</span><span class="nav-label">Garçom</span></button>
+        <button data-v="hospede"><span class="nav-ico">♙</span><span class="nav-label">Hóspedes</span></button>
+        <button data-v="contestacoes"><span class="nav-ico">△</span><span class="nav-label">Contestações</span><span id="claimBadge" class="nav-badge">0</span></button>
+        <button data-v="checkout"><span class="nav-ico">⇥</span><span class="nav-label">Check-out</span></button>
+        <button data-v="cartoes"><span class="nav-ico">▱</span><span class="nav-label">Cartões</span></button>
+        <button data-v="produtos"><span class="nav-ico">◇</span><span class="nav-label">Produtos</span></button>
       </nav>
       <div class="sidebar-bottom">uma fazenda que hospeda</div>
     </aside>
@@ -341,6 +350,8 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <div id="modal" class="modal"><div class="modalbox" id="modalBox"></div></div>
 <div id="toast" class="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ROOMS=["101","102","103","201","202","203","204","205","206","207","208","209"];
 const defaultProducts=[
