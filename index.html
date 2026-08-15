@@ -205,5 +205,22 @@ function addProduct(){
 }
 function renderProducts(){document.getElementById("productList").innerHTML=db.products.map(p=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><span>${p.name}<small> · ${p.cat}</small></span><b>${money(p.price)}</b></div>`).join("")}
 renderAll();
+ async function testarSupabase() {
+  const { data, error } = await supabase
+    .from("quartos")
+    .select("numero")
+    .order("numero");
+
+  if (error) {
+    console.error("Erro ao conectar ao Supabase:", error);
+    toast("Erro ao conectar ao banco.");
+    return;
+  }
+
+  console.log("Quartos recebidos do Supabase:", data);
+  toast("Supabase conectado! " + data.length + " quartos encontrados.");
+}
+
+testarSupabase();
 </script>
 </body></html>
