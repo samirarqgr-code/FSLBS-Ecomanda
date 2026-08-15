@@ -23,14 +23,262 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 .toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:12px 15px;border-radius:10px;display:none;z-index:30}
 .notice{background:#f3ecdd;border-radius:10px;padding:11px;margin:10px 0;font-size:13px}
 @media(max-width:800px){.grid,.grid2{grid-template-columns:1fr}header{gap:10px}nav{top:59px}}
+ /* ===== LOGIN / ACESSOS ===== */
+
+.login-screen{
+  min-height:100vh;
+  background:var(--cream);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:25px;
+}
+
+.login-box{
+  width:min(520px,100%);
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:35px;
+  box-shadow:0 15px 45px #0001;
+}
+
+.login-logo{
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.login-logo strong{
+  display:block;
+  color:var(--navy);
+  font-family:Georgia,serif;
+  font-size:29px;
+}
+
+.login-logo small{
+  color:var(--muted);
+}
+
+.login-box h1{
+  text-align:center;
+  margin-bottom:5px;
+}
+
+.login-subtitle{
+  text-align:center;
+  color:var(--muted);
+  margin-top:0;
+  margin-bottom:25px;
+}
+
+.login-options{
+  display:grid;
+  gap:14px;
+}
+
+.login-option{
+  width:100%;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:#fff;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.login-option:hover{
+  border-color:var(--navy);
+  transform:translateY(-2px);
+}
+
+.login-option strong{
+  display:block;
+  font-size:16px;
+  margin-bottom:5px;
+}
+
+.login-option small{
+  color:var(--muted);
+}
+
+.login-icon{
+  font-size:25px;
+  display:block;
+  margin-bottom:8px;
+}
+
+.guest-option{
+  background:#faf8f2;
+}
+
+.login-form{
+  margin-top:10px;
+}
+
+.login-form h2{
+  margin-top:10px;
+}
+
+.login-button{
+  width:100%;
+  margin-top:5px;
+}
+
+.back-login{
+  background:transparent;
+  color:var(--navy);
+  padding:5px 0;
+}
+
+.login-demo{
+  background:#f3ecdd;
+  padding:12px;
+  border-radius:10px;
+  margin-top:15px;
+  font-size:12px;
+  line-height:1.6;
+}
+
+#qrReader{
+  margin-top:15px;
+  text-align:center;
+}
+
+#qrReader video{
+  width:100%;
+  max-width:360px;
+  border-radius:15px;
+}
+
+@media(max-width:600px){
+  .login-box{
+    padding:25px 18px;
+  }
+}
 </style>
 </head>
 <body>
-<header><div><strong>FSLBS E-comanda</strong><br><small>MVP funcional · Fazenda São Luiz da Boa Sorte</small></div><div id="roleLabel">Recepção / Administração</div></header>
+
+<!-- TELA INICIAL -->
+<section id="loginScreen" class="login-screen">
+
+  <div class="login-box">
+
+    <div class="login-logo">
+      <strong>FSLBS E-comanda</strong>
+      <small>Fazenda São Luiz da Boa Sorte</small>
+    </div>
+
+    <h1>Bem-vindo</h1>
+    <p class="login-subtitle">
+      Escolha como deseja acessar o sistema.
+    </p>
+
+    <div class="login-options">
+
+      <button class="login-option" onclick="showStaffLogin()">
+        <span class="login-icon">🔐</span>
+        <strong>E-mail e senha</strong>
+        <small>Recepção e Garçom</small>
+      </button>
+
+      <button class="login-option guest-option" onclick="showGuestAccess()">
+        <span class="login-icon">📱</span>
+        <strong>Querido hóspede, acompanhe sua comanda</strong>
+        <small>Acesse utilizando o QR Code do seu cartão</small>
+      </button>
+
+    </div>
+
+    <div id="staffLogin" class="login-form" style="display:none">
+
+      <button class="back-login" onclick="backToLogin()">← Voltar</button>
+
+      <h2>Área da equipe</h2>
+
+      <div class="field">
+        <label>E-mail</label>
+        <input id="loginEmail" type="email" placeholder="Digite seu e-mail">
+      </div>
+
+      <div class="field">
+        <label>Senha</label>
+        <input id="loginPassword" type="password" placeholder="Digite sua senha">
+      </div>
+
+      <button class="btn green login-button" onclick="loginStaff()">
+        Entrar
+      </button>
+
+      <div class="login-demo">
+        <b>Demo</b><br>
+        Recepção: recepcao@fslbs.com<br>
+        Garçom: garcom@fslbs.com<br>
+        Senha: 123456
+      </div>
+
+    </div>
+
+    <div id="guestAccess" class="login-form" style="display:none">
+
+      <button class="back-login" onclick="backToLogin()">← Voltar</button>
+
+      <h2>Acompanhe sua comanda</h2>
+
+      <p>
+        Aponte a câmera para o QR Code presente no cartão do seu quarto.
+      </p>
+
+      <button class="btn login-button" onclick="startQRScanner()">
+        📷 Ler QR Code
+      </button>
+
+      <div id="qrReader"></div>
+
+      <div id="guestDemoAccess" style="margin-top:15px">
+        <small>Demo: selecione o quarto</small>
+
+        <select id="guestLoginRoom"></select>
+
+        <button class="btn light login-button" onclick="enterGuestDemo()">
+          Acessar com este cartão
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- SISTEMA -->
+<div id="app" style="display:none">
+
+<header>
+  <div>
+    <strong>FSLBS E-comanda</strong><br>
+    <small>MVP funcional · Fazenda São Luiz da Boa Sorte</small>
+  </div>
+
+  <div class="row" style="gap:12px">
+    <div id="roleLabel">Recepção / Administração</div>
+    <button class="btn light" onclick="logout()">Sair</button>
+  </div>
+</header>
+
 <nav id="nav">
-<button data-v="dashboard">Início</button><button data-v="checkin">Check-in</button><button data-v="comandas">Comandas</button>
-<button data-v="garcom">Garçom</button><button data-v="hospede">Hóspede</button><button data-v="contestacoes">Contestações</button>
-<button data-v="checkout">Check-out</button><button data-v="cartoes">Cartões</button><button data-v="produtos">Produtos</button>
+  <button data-v="dashboard">Início</button>
+  <button data-v="checkin">Check-in</button>
+  <button data-v="comandas">Comandas</button>
+  <button data-v="garcom">Garçom</button>
+  <button data-v="hospede">Hóspede</button>
+  <button data-v="contestacoes">Contestações</button>
+  <button data-v="checkout">Check-out</button>
+  <button data-v="cartoes">Cartões</button>
+  <button data-v="produtos">Produtos</button>
 </nav>
 <main>
 
@@ -181,5 +429,340 @@ function addProduct(){
 }
 function renderProducts(){document.getElementById("productList").innerHTML=db.products.map(p=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><span>${p.name}<small> · ${p.cat}</small></span><b>${money(p.price)}</b></div>`).join("")}
 renderAll();
+ /* =====================================================
+   CONTROLE DE ACESSO — FSLBS
+   ===================================================== */
+
+let currentRole = null;
+let currentGuestRoom = null;
+
+
+/* ---------- TELA DE LOGIN ---------- */
+
+function showStaffLogin(){
+  document.querySelector(".login-options").style.display="none";
+  document.getElementById("guestAccess").style.display="none";
+  document.getElementById("staffLogin").style.display="block";
+}
+
+function showGuestAccess(){
+  document.querySelector(".login-options").style.display="none";
+  document.getElementById("staffLogin").style.display="none";
+  document.getElementById("guestAccess").style.display="block";
+
+  let select=document.getElementById("guestLoginRoom");
+
+  select.innerHTML=ROOMS
+    .filter(r=>activeStay(r))
+    .map(r=>`<option value="${r}">
+      Quarto ${r} · Cartão C-${r}
+    </option>`)
+    .join("");
+
+  if(!select.innerHTML){
+    select.innerHTML="<option>Nenhuma hospedagem ativa</option>";
+  }
+}
+
+function backToLogin(){
+  document.querySelector(".login-options").style.display="grid";
+  document.getElementById("staffLogin").style.display="none";
+  document.getElementById("guestAccess").style.display="none";
+  document.getElementById("qrReader").innerHTML="";
+}
+
+
+/* ---------- LOGIN DA EQUIPE ---------- */
+
+function loginStaff(){
+
+  let email=document.getElementById("loginEmail").value
+    .trim()
+    .toLowerCase();
+
+  let password=document.getElementById("loginPassword").value;
+
+  if(!email || !password){
+    return toast("Informe e-mail e senha.");
+  }
+
+  if(password!=="123456"){
+    return toast("Senha incorreta.");
+  }
+
+  if(email==="recepcao@fslbs.com"){
+
+    currentRole="recepcao";
+
+    enterSystem(
+      "Recepção / Administração",
+      "dashboard"
+    );
+
+    return;
+  }
+
+  if(email==="garcom@fslbs.com"){
+
+    currentRole="garcom";
+
+    enterSystem(
+      "Garçom",
+      "garcom"
+    );
+
+    return;
+  }
+
+  toast("E-mail não cadastrado.");
+}
+
+
+/* ---------- ENTRADA NO SISTEMA ---------- */
+
+function enterSystem(label,firstView){
+
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("app").style.display="block";
+
+  document.getElementById("roleLabel").textContent=label;
+
+  configureAccess();
+
+  go(firstView);
+}
+
+
+/* ---------- PERMISSÕES ---------- */
+
+function configureAccess(){
+
+  let allowed=[];
+
+  if(currentRole==="recepcao"){
+
+    allowed=[
+      "dashboard",
+      "checkin",
+      "comandas",
+      "garcom",
+      "hospede",
+      "contestacoes",
+      "checkout",
+      "cartoes",
+      "produtos"
+    ];
+
+  }
+
+  if(currentRole==="garcom"){
+
+    allowed=[
+      "garcom"
+    ];
+
+  }
+
+  document.querySelectorAll("#nav button").forEach(btn=>{
+
+    btn.style.display=
+      allowed.includes(btn.dataset.v)
+      ? ""
+      : "none";
+
+  });
+}
+
+
+/* ---------- ACESSO DO HÓSPEDE ---------- */
+
+function enterGuest(room){
+
+  let s=activeStay(room);
+
+  if(!s){
+    toast("Nenhuma hospedagem ativa neste cartão.");
+    return;
+  }
+
+  currentRole="hospede";
+  currentGuestRoom=room;
+
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("app").style.display="block";
+
+  document.getElementById("roleLabel").textContent=
+    "Hóspede · Quarto "+room;
+
+  /* Hóspede não possui menu */
+  document.getElementById("nav").style.display="none";
+
+  /* Esconde absolutamente todas as telas */
+  document.querySelectorAll(".view").forEach(v=>{
+    v.classList.remove("active");
+  });
+
+  /* Mostra somente a tela do hóspede */
+  document.getElementById("hospede").classList.add("active");
+
+  renderGuestPrivate(room);
+}
+
+
+/* ---------- DEMO DO QR ---------- */
+
+function enterGuestDemo(){
+
+  let room=document.getElementById("guestLoginRoom").value;
+
+  if(!activeStay(room)){
+    return toast("Este quarto não possui hospedagem ativa.");
+  }
+
+  enterGuest(room);
+}
+
+
+/* ---------- TELA PRIVADA DO HÓSPEDE ---------- */
+
+function renderGuestPrivate(room){
+
+  let s=activeStay(room);
+
+  if(!s)return;
+
+  document.getElementById("hospede").innerHTML=`
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <small>Fazenda São Luiz da Boa Sorte</small>
+          <h1 style="margin-bottom:3px">
+            Minha comanda
+          </h1>
+        </div>
+
+        <button class="btn light" onclick="logout()">
+          Sair
+        </button>
+      </div>
+
+      <div class="notice">
+        Quarto <b>${s.room}</b> · ${s.name}
+      </div>
+
+      <h3>Meus consumos</h3>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Consumo</th>
+            <th>Valor</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${(s.items||[]).map(i=>`
+
+            <tr>
+
+              <td>${i.time}</td>
+
+              <td>
+                ${i.name} × ${i.qty}
+              </td>
+
+              <td>
+                ${money(i.price*i.qty)}
+              </td>
+
+              <td>
+
+                <button
+                  class="btn red"
+                  onclick="claimItem('${s.id}','${i.id}')">
+                  Não reconheço
+                </button>
+
+              </td>
+
+            </tr>
+
+          `).join("") ||
+
+          `<tr>
+            <td colspan="4">
+              Nenhum consumo lançado.
+            </td>
+          </tr>`}
+
+        </tbody>
+
+      </table>
+
+      <div class="right" style="margin-top:20px">
+
+        <small>Total da comanda</small>
+
+        <div class="money">
+          ${money(total(s))}
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* ---------- SAÍDA ---------- */
+
+function logout(){
+
+  currentRole=null;
+  currentGuestRoom=null;
+
+  document.getElementById("app").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+
+  document.getElementById("nav").style.display="flex";
+
+  document.getElementById("staffLogin").style.display="none";
+  document.getElementById("guestAccess").style.display="none";
+
+  document.querySelector(".login-options").style.display="grid";
+
+  document.getElementById("loginEmail").value="";
+  document.getElementById("loginPassword").value="";
+
+  document.getElementById("qrReader").innerHTML="";
+
+  document.querySelectorAll("#nav button").forEach(btn=>{
+    btn.style.display="";
+  });
+}
+
+
+/* ---------- BLOQUEIO EXTRA DE NAVEGAÇÃO ---------- */
+
+const originalGo=go;
+
+go=function(v){
+
+  if(currentRole==="garcom" && v!=="garcom"){
+    return;
+  }
+
+  if(currentRole==="hospede" && v!=="hospede"){
+    return;
+  }
+
+  originalGo(v);
+};
 </script>
 </body></html>
