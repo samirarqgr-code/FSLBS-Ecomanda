@@ -433,7 +433,17 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
         <section id="comandas" class="view"><div class="page-title"><div><h1>Comandas</h1><p>Consumos ativos por hospedagem.</p></div></div><div class="card"><div id="orders"></div></div></section>
 
         <section id="garcom" class="view"><div class="page-title"><div><h1>Modo Garçom</h1><p>Lance consumos de forma rápida e simples.</p></div></div>
-          <div class="card qr-only-access"><h3>1. Ler cartão do quarto</h3><p class="notice">O garçom só pode acessar uma comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('waiter')">📷 Ler QR Code do cartão</button></div><div id="waiterPanel"></div>
+          <div class="card">
+            <h3>1. Escolher quarto</h3>
+            <p class="notice">Você pode selecionar o quarto manualmente ou, se preferir, ler o QR Code do cartão.</p>
+            <div class="field">
+              <label>Quarto</label>
+              <select id="waiterManualRoom"></select>
+            </div>
+            <button class="btn green" style="width:100%;padding:16px;font-size:16px;margin-top:10px" onclick="openManualWaiter()">Abrir comanda do quarto</button>
+            <button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px;margin-top:10px" onclick="startQRScanner('waiter')">📷 Ler QR Code do cartão (opcional)</button>
+          </div>
+          <div id="waiterPanel"></div>
         </section>
 
         <section id="hospede" class="view"><div class="page-title"><div><h1>Área do hóspede</h1><p>Consulte e conteste os consumos vinculados ao cartão.</p></div></div><div class="card qr-only-access"><h3>Consultar comanda pelo cartão</h3><p class="notice">O hóspede só pode consultar a própria comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('guest')">📷 Ler QR Code do cartão</button><div id="guestPanel"></div></div></section>
@@ -510,6 +520,12 @@ function fillSelect(id,onlyActive=false){
 }
 function renderAll(){
  fillSelect("ciRoom");
+ fillSelect("waiterManualRoom",true);
+ const waiterManual=document.getElementById("waiterManualRoom");
+ if(waiterManual){
+   const current=document.getElementById("waiterRoom")?.value;
+   if(current && [...waiterManual.options].some(o=>o.value===current)) waiterManual.value=current;
+ }
  let d=new Date(),iso=d.toISOString().slice(0,10);
  let ciIn=document.getElementById("ciIn");if(ciIn&&!ciIn.value)ciIn.value=iso;
  let ciRoom=document.getElementById("ciRoom");
@@ -630,9 +646,17 @@ function closeModal(){document.getElementById("modal").classList.remove("open")}
 function renderOrders(){
  let a=db.stays.filter(s=>s.active);document.getElementById("orders").innerHTML=a.length?`<table><thead><tr><th>Quarto</th><th>Hóspede</th><th>Cartão</th><th>Consumo</th><th></th></tr></thead><tbody>${a.map(s=>`<tr><td><b>${s.room}</b></td><td>${s.name}</td><td>${s.card}</td><td>${money(total(s))}</td><td><button onclick="openOrder('${s.room}')">Abrir</button></td></tr>`).join("")}</tbody></table>`:"Nenhuma comanda aberta.";
 }
+function openManualWaiter(){
+ let room=document.getElementById("waiterManualRoom")?.value;
+ if(!room)return toast("Selecione um quarto.");
+ let wr=document.getElementById("waiterRoom");
+ if(!wr){wr=document.createElement("input");wr.type="hidden";wr.id="waiterRoom";document.body.appendChild(wr)}
+ wr.value=room;
+ openWaiter();
+}
 function openWaiter(){
  let room=document.getElementById("waiterRoom")?.value,s=room&&activeStay(room);
- if(!s)return toast("Leia o QR Code do cartão para acessar a comanda.");
+ if(!s)return toast("Selecione uma hospedagem ativa ou leia o QR Code do cartão.");
  const now=Date.now();
  const history=(s.items||[]).slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  const rows=history.length?history.map(i=>{
