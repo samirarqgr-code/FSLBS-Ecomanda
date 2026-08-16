@@ -158,7 +158,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 }
 
 </style>
-</head>
+<style>.qr-only-access{border:1px solid var(--line)}.qr-only-access .qr-btn{font-weight:700}</style></head>
 <body>
 
 <div id="loginScreen" class="login-screen">
@@ -194,9 +194,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
     <div id="guestAccess" class="login-form" style="display:none">
       <button class="back-login" onclick="backToLogin()">← Voltar</button>
       <h2>Acesso do hóspede</h2>
-      <p class="login-subtitle">Selecione o quarto vinculado ao seu cartão.</p>
-      <div class="field"><label>Quarto</label><select id="guestLoginRoom"></select></div>
-      <button class="login-button" onclick="enterGuestDemo()">Entrar como hóspede</button>
+      <p class="login-subtitle">Use o cartão físico para acessar sua comanda.</p>
       <button class="login-button" style="margin-top:10px;background:#68775d" onclick="startQRScanner('login')">📷 Ler QR Code</button>
       <div class="login-demo">Você pode selecionar o quarto ou usar a câmera para ler o QR Code do cartão.</div>
     </div>
@@ -315,10 +313,10 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
         <section id="comandas" class="view"><div class="page-title"><div><h1>Comandas</h1><p>Consumos ativos por hospedagem.</p></div></div><div class="card"><div id="orders"></div></div></section>
 
         <section id="garcom" class="view"><div class="page-title"><div><h1>Modo Garçom</h1><p>Lance consumos de forma rápida e simples.</p></div></div>
-          <div class="card"><h3>1. Identificar cartão</h3><div class="grid2"><div class="field"><label>Quarto</label><select id="waiterRoom"></select></div><div class="qr-actions"><button onclick="openWaiter()">Abrir comanda</button><button class="btn qr-btn" onclick="startQRScanner('waiter')">📷 Ler QR Code</button></div></div><div class="notice">Você pode selecionar o quarto ou usar a câmera para ler o QR Code do cartão.</div></div><div id="waiterPanel"></div>
+          <div class="card qr-only-access"><h3>1. Ler cartão do quarto</h3><p class="notice">O garçom só pode acessar uma comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('waiter')">📷 Ler QR Code do cartão</button></div><div id="waiterPanel"></div>
         </section>
 
-        <section id="hospede" class="view"><div class="page-title"><div><h1>Área do hóspede</h1><p>Consulte e conteste os consumos vinculados ao quarto.</p></div></div><div class="card"><h3>Consultar comanda pelo cartão</h3><div class="grid2"><div class="field"><label>Cartão / quarto</label><select id="guestRoom"></select></div><div class="qr-actions"><button onclick="openGuest()">Consultar</button><button class="btn qr-btn" onclick="startQRScanner('guest')">📷 Ler QR Code</button></div></div><div id="guestPanel"></div></div></section>
+        <section id="hospede" class="view"><div class="page-title"><div><h1>Área do hóspede</h1><p>Consulte e conteste os consumos vinculados ao cartão.</p></div></div><div class="card qr-only-access"><h3>Consultar comanda pelo cartão</h3><p class="notice">O hóspede só pode consultar a própria comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('guest')">📷 Ler QR Code do cartão</button><div id="guestPanel"></div></div></section>
 
         <section id="contestacoes" class="view"><div class="page-title"><div><h1>Contestações</h1><p>Analise os itens não reconhecidos pelos hóspedes.</p></div></div><div class="card" id="claims"></div></section>
 
@@ -382,7 +380,7 @@ function fillSelect(id,onlyActive=false){
  el.innerHTML=arr.length?arr.map(r=>`<option value="${r}">Quarto ${r} · Cartão C-${r}</option>`).join(""):"<option>Nenhuma opção disponível</option>";
 }
 function renderAll(){
- fillSelect("ciRoom");fillSelect("waiterRoom",true);fillSelect("guestRoom",true);
+ fillSelect("ciRoom");
  let d=new Date(),iso=d.toISOString().slice(0,10);
  let ciIn=document.getElementById("ciIn");if(ciIn&&!ciIn.value)ciIn.value=iso;
  let ciRoom=document.getElementById("ciRoom");
@@ -483,7 +481,7 @@ function renderOrders(){
  let a=db.stays.filter(s=>s.active);document.getElementById("orders").innerHTML=a.length?`<table><thead><tr><th>Quarto</th><th>Hóspede</th><th>Cartão</th><th>Consumo</th><th></th></tr></thead><tbody>${a.map(s=>`<tr><td><b>${s.room}</b></td><td>${s.name}</td><td>${s.card}</td><td>${money(total(s))}</td><td><button onclick="openOrder('${s.room}')">Abrir</button></td></tr>`).join("")}</tbody></table>`:"Nenhuma comanda aberta.";
 }
 function openWaiter(){
- let room=document.getElementById("waiterRoom").value,s=activeStay(room);if(!s)return;
+ let room=document.getElementById("waiterRoom")?.value,s=room&&activeStay(room);if(!s)return toast("Leia o QR Code do cartão para acessar a comanda.");
  document.getElementById("waiterPanel").innerHTML=`<div class="card"><h2>Quarto ${room} · ${s.name}</h2><p>Total atual: <b>${money(total(s))}</b></p><div class="grid2"><div class="field"><label>Produto</label><select id="wProd">${db.products.map(p=>`<option value="${p.id}">${p.name} · ${money(p.price)}</option>`).join("")}</select></div><div class="field"><label>Quantidade</label><input id="wQty" type="number" min="1" value="1"></div><div class="field"><label>Funcionário</label><input id="wStaff" value="Garçom"></div><div class="field"><label>Local da venda</label><input id="wPlace" value="Restaurante"></div></div><button class="btn green" onclick="addConsumption('${room}')">Lançar consumo</button></div>`;
 }
 async function addConsumption(room){
@@ -501,7 +499,7 @@ async function addConsumption(room){
  }catch(e){console.error(e);toast("Não foi possível lançar o consumo: "+(e.message||"verifique as permissões."));}
 }
 function openGuest(){
- let s=activeStay(document.getElementById("guestRoom").value);if(!s)return;
+ let room=document.getElementById("guestRoom")?.value,s=room&&activeStay(room);if(!s)return toast("Leia o QR Code do cartão para acessar a comanda.");
  document.getElementById("guestPanel").innerHTML=`<div class="notice">Quarto ${s.room} · ${s.name}<br>Última atualização: ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div><table><thead><tr><th>Horário</th><th>Consumo</th><th>Valor</th><th></th></tr></thead><tbody>${(s.items||[]).map(i=>`<tr><td>${i.time}</td><td>${i.name} × ${i.qty}</td><td>${money(i.price*i.qty)}</td><td><button class="btn red" onclick="claimItem('${s.id}','${i.id}')">Não reconheço</button></td></tr>`).join("")||`<tr><td colspan="4">Nenhum consumo lançado.</td></tr>`}</tbody></table><h2 class="right">${money(total(s))}</h2>`;
 }
 async function claimItem(stayId,itemId){
@@ -540,7 +538,7 @@ async function checkout(id){
 }
 function renderCards(){
  document.getElementById("cards").innerHTML=ROOMS.map(r=>{let s=activeStay(r);return `<div class="card"><div class="row"><h3>Quarto ${r}</h3><span class="pill ${s?"":"gray"}">${s?"Em uso":"Livre"}</span></div><p>Cartão permanente: <b>C-${r}</b></p><div id="qr-${r}" class="card-qr"></div><br><button class="btn light" onclick="printCard('${r}')">Imprimir cartão</button></div>`}).join("");
- ROOMS.forEach(r=>{let el=document.getElementById("qr-"+r);if(el&&typeof QRCode==="function"){el.innerHTML="";new QRCode(el,{text:makeQRData(r),width:160,height:160,colorDark:"#14223f",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}});
+ ROOMS.forEach(r=>{let el=document.getElementById("qr-"+r);if(el&&typeof QRCode==="function"){el.innerHTML="";new QRCode(el,{text:makeQRData(r),width:240,height:240,colorDark:"#14223f",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}});
 }
 function printCard(room){
  let w=window.open("","_blank");
@@ -561,7 +559,6 @@ function renderProducts(){document.getElementById("productList").innerHTML=db.pr
 function showStaffLogin(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="block";document.getElementById("guestAccess").style.display="none"}
 function showGuestAccess(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="block";fillGuestLoginRooms()}
 function backToLogin(){document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="none";document.querySelector(".login-options").style.display="grid"}
-function fillGuestLoginRooms(){let s=document.getElementById("guestLoginRoom"),a=ROOMS.filter(r=>activeStay(r));s.innerHTML=a.length?a.map(r=>`<option value="${r}">Quarto ${r} · Cartão C-${r}</option>`).join(""):"<option>Nenhum quarto com hospedagem ativa</option>"}
 function loginStaff(){
  let email=document.getElementById("loginEmail").value.trim().toLowerCase(),password=document.getElementById("loginPassword").value;if(!email||!password)return toast("Informe e-mail e senha.");if(password!=="123456")return toast("Senha incorreta.");
  if(email==="recepcao@fslbs.com"){currentRole="recepcao";enterSystem("Recepção / Administração","dashboard");return}
@@ -575,48 +572,65 @@ function configureAccess(){
  let allowed=currentRole==="recepcao"?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]:["garcom"];
  document.querySelectorAll("#nav button").forEach(btn=>btn.style.display=allowed.includes(btn.dataset.v)?"":"none")
 }
-function enterGuestDemo(){
- let room=document.getElementById("guestLoginRoom").value;if(!activeStay(room))return toast("Este quarto não possui hospedagem ativa.");currentRole="hospede";currentGuestRoom=room;
- document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;
- document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");go("hospede");setTimeout(()=>{let s=document.getElementById("guestRoom");if(s){s.value=room;openGuest()}},50)
-}
-let qrStream=null,qrAnimation=null,qrScanTarget="guest";
-function makeQRData(room){return "FSLBS|CARTAO|"+room+"|C-"+room}
+let qrStream=null,qrAnimation=null,qrScanTarget="guest",qrDetector=null,qrLastText="";
+
+function makeQRData(room){return "FSLBS|CARTAO|"+String(room)+"|C-"+String(room)}
 function parseQRData(text){
  const raw=String(text||"").trim();
- let m=raw.match(/^FSLBS\|CARTAO\|([A-Za-z0-9-]+)\|C-\1$/i);
- if(m)return {room:m[1]};
- let c=raw.match(/C-([A-Za-z0-9-]+)/i);if(c)return {room:c[1]};
- let q=raw.match(/(?:ROOM|QUARTO)[:=| ]([A-Za-z0-9-]+)/i);if(q)return {room:q[1]};
+ const m=raw.match(/^FSLBS\|CARTAO\|([A-Za-z0-9-]+)\|C-\1$/i);
+ if(m)return {room:String(m[1])};
+ const c=raw.match(/\bC-([A-Za-z0-9-]+)\b/i);
+ if(c)return {room:String(c[1])};
  return null;
 }
 async function startQRScanner(target="guest"){
- qrScanTarget=target;
- document.getElementById("qrScannerModal").classList.add("open");
- let status=document.getElementById("qrScanStatus");status.textContent="Solicitando acesso à câmera…";
- if(!navigator.mediaDevices?.getUserMedia){status.textContent="Seu navegador não disponibiliza acesso à câmera.";return}
+ qrScanTarget=target;qrLastText="";
+ const modal=document.getElementById("qrScannerModal"),status=document.getElementById("qrScanStatus");
+ modal.classList.add("open");status.textContent="Solicitando acesso à câmera…";
+ if(!window.isSecureContext){status.textContent="Abra o site pelo endereço HTTPS para usar a câmera.";return}
+ if(!navigator.mediaDevices?.getUserMedia){status.textContent="Este navegador não disponibiliza acesso à câmera.";return}
  try{
+  if(qrAnimation)cancelAnimationFrame(qrAnimation);
   if(qrStream)qrStream.getTracks().forEach(t=>t.stop());
-  qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
-  let video=document.getElementById("qrVideo");video.srcObject=qrStream;await video.play();
-  status.textContent="Aponte a câmera para o QR Code.";scanQRCode();
- }catch(err){console.error(err);status.textContent="Não foi possível acessar a câmera. Verifique a permissão do navegador."}
+  qrStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+  const video=document.getElementById("qrVideo");video.srcObject=qrStream;video.setAttribute("playsinline","");video.muted=true;await video.play();
+  qrDetector=null;if("BarcodeDetector" in window){try{qrDetector=new BarcodeDetector({formats:["qr_code"]})}catch(e){}}
+  status.textContent="Aponte a câmera para o QR Code do cartão.";scanQRCode();
+ }catch(err){console.error(err);status.textContent="Não foi possível acessar a câmera. Permita o acesso à câmera nas configurações do navegador."}
 }
-function scanQRCode(){
- let video=document.getElementById("qrVideo"),canvas=document.getElementById("qrCanvas");
- if(!video.videoWidth){qrAnimation=requestAnimationFrame(scanQRCode);return}
- canvas.width=video.videoWidth;canvas.height=video.videoHeight;
- let ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(video,0,0,canvas.width,canvas.height);
- let img=ctx.getImageData(0,0,canvas.width,canvas.height);
- let code=(typeof jsQR==="function")?jsQR(img.data,img.width,img.height,{inversionAttempts:"attemptBoth"}):null;
- if(code){let result=parseQRData(code.data);if(result&&ROOMS.includes(result.room)){handleQRResult(result.room);return}document.getElementById("qrScanStatus").textContent="QR Code não reconhecido. Use o cartão da Fazenda."}
+async function scanQRCode(){
+ const video=document.getElementById("qrVideo"),canvas=document.getElementById("qrCanvas");
+ if(!video||video.readyState<2||!video.videoWidth){qrAnimation=requestAnimationFrame(scanQRCode);return}
+ try{
+  if(qrDetector){
+   const codes=await qrDetector.detect(video);
+   for(const code of codes||[]){const result=parseQRData(code.rawValue);if(result){handleQRResult(result.room);return}}
+  }
+  if(typeof jsQR==="function"){
+   const maxW=900,scale=Math.min(1,maxW/video.videoWidth);
+   canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
+   const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(video,0,0,canvas.width,canvas.height);
+   const img=ctx.getImageData(0,0,canvas.width,canvas.height),code=jsQR(img.data,img.width,img.height,{inversionAttempts:"attemptBoth"});
+   if(code){const result=parseQRData(code.data);if(result){handleQRResult(result.room);return}}
+  }
+ }catch(err){console.debug("Leitura QR",err)}
  qrAnimation=requestAnimationFrame(scanQRCode);
 }
 function handleQRResult(room){
- closeQRScanner();let s=activeStay(room);
- if(qrScanTarget==="waiter"){if(!s)return toast("Este quarto não possui hospedagem ativa.");document.getElementById("waiterRoom").value=room;go("garcom");openWaiter();toast("Cartão do quarto "+room+" identificado.");return}
- if(qrScanTarget==="guest"){if(!s)return toast("Este quarto não possui hospedagem ativa.");document.getElementById("guestRoom").value=room;go("hospede");openGuest();toast("Cartão do quarto "+room+" identificado.");return}
- if(qrScanTarget==="login"){if(!s)return toast("Este quarto não possui hospedagem ativa.");currentRole="hospede";currentGuestRoom=room;document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");go("hospede");setTimeout(()=>{let el=document.getElementById("guestRoom");if(el){el.value=room;openGuest()}},50)}
+ room=String(room);
+ if(!ROOMS.map(String).includes(room)){toast("Cartão inválido ou quarto não cadastrado.");return}
+ const s=activeStay(room);
+ if(!s){closeQRScanner();toast("Este cartão não está vinculado a uma hospedagem ativa.");return}
+ closeQRScanner();
+ if(qrScanTarget==="waiter"){
+  let wr=document.getElementById("waiterRoom");if(!wr){wr=document.createElement("input");wr.type="hidden";wr.id="waiterRoom";document.body.appendChild(wr)}
+  wr.value=room;go("garcom");openWaiter();toast("Cartão C-"+room+" identificado.");return
+ }
+ currentRole="hospede";currentGuestRoom=room;
+ let gr=document.getElementById("guestRoom");if(!gr){gr=document.createElement("input");gr.type="hidden";gr.id="guestRoom";document.body.appendChild(gr)}
+ gr.value=room;
+ document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;
+ document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");go("hospede");openGuest();toast("Cartão C-"+room+" identificado.");
 }
 function closeQRScanner(){
  if(qrAnimation)cancelAnimationFrame(qrAnimation);qrAnimation=null;
@@ -674,6 +688,31 @@ function logout(){
  document.querySelectorAll("#nav button").forEach(btn=>btn.style.display="")
 }
 bootSupabase();
+let syncTimer=null;
+let syncBusy=false;
+async function syncFromSupabase(){
+  if(syncBusy || !supabaseReady) return;
+  syncBusy=true;
+  try{
+    await loadFromSupabase();
+  }catch(e){
+    console.debug("Sincronização:",e);
+  }finally{
+    syncBusy=false;
+  }
+}
+function startCrossDeviceSync(){
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer=setInterval(syncFromSupabase,5000);
+}
+
+startCrossDeviceSync();
+
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) syncFromSupabase();
+});
+window.addEventListener("focus",()=>syncFromSupabase());
+
 
 setInterval(()=>{
   const d=new Date();
