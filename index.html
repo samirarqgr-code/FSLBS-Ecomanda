@@ -157,7 +157,37 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
   .sidebar-nav button .nav-label{display:block!important;visibility:visible!important;opacity:1!important;font-size:12px!important}
 }
 
+</style><style>
+/* Modo hóspede: somente a área branca da própria comanda */
+body.guest-only #app .sidebar,
+body.guest-only #app .topbar,
+body.guest-only #app .sidebar-bottom,
+body.guest-only #app .content > header,
+body.guest-only #app .page-title + .sidebar-nav {
+  display:none !important;
+}
+body.guest-only #app .app-shell {
+  display:block !important;
+}
+body.guest-only #app .content {
+  margin:0 !important;
+  width:100% !important;
+  min-height:100vh !important;
+  background:#fff !important;
+}
+body.guest-only #app .view {
+  display:none !important;
+}
+body.guest-only #app #hospede {
+  display:block !important;
+  min-height:100vh !important;
+  background:#fff !important;
+}
+body.guest-only #app #hospede .page-title {
+  display:none !important;
+}
 </style>
+
 <style>.qr-only-access{border:1px solid var(--line)}.qr-only-access .qr-btn{font-weight:700}</style><style>
 @media(max-width:760px){
   .topbar .profile{display:flex!important;align-items:center;gap:8px;min-width:0}
@@ -952,6 +982,7 @@ function handleQRResult(room){
   wr.value=room;go("garcom");openWaiter();toast("Cartão C-"+room+" identificado.");return
  }
  currentRole="hospede";currentGuestRoom=room;
+ document.body.classList.add("guest-only");
  let gr=document.getElementById("guestRoom");if(!gr){gr=document.createElement("input");gr.type="hidden";gr.id="guestRoom";document.body.appendChild(gr)}
  gr.value=room;
  document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;
@@ -1039,6 +1070,7 @@ async function bootSupabase(){
 }
 
 function logout(){
+ document.body.classList.remove("guest-only");
  currentRole=null;currentGuestRoom=null;
  document.getElementById("app").classList.remove("garcom-mode");
  document.getElementById("app").style.display="none";
