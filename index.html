@@ -316,7 +316,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
       <h2>Acesso do hóspede</h2>
       <p class="login-subtitle">Use o cartão físico para acessar sua comanda.</p>
       <button class="login-button" style="margin-top:10px;background:#68775d" onclick="startQRScanner('login')">📷 Ler QR Code</button>
-      <div class="login-demo">Você pode selecionar o quarto ou usar a câmera para ler o QR Code do cartão.</div>
+      <div class="login-demo">Acesso somente à comanda do próprio cartão. O hóspede não tem acesso à recepção ou às demais áreas do sistema.</div>
     </div>
   </div>
 </div>
@@ -446,7 +446,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
           <div id="waiterPanel"></div>
         </section>
 
-        <section id="hospede" class="view"><div class="page-title"><div><h1>Área do hóspede</h1><p>Consulte e conteste os consumos vinculados ao cartão.</p></div></div><div class="card qr-only-access"><h3>Consultar comanda pelo cartão</h3><p class="notice">O hóspede só pode consultar a própria comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('guest')">📷 Ler QR Code do cartão</button><div id="guestPanel"></div></div></section>
+        <section id="hospede" class="view"><div class="page-title"><div><h1>Minha comanda</h1><p>Consulte apenas os consumos do seu quarto e conteste os itens que não reconhecer.</p></div></div><div class="card qr-only-access"><h3>Consultar comanda pelo cartão</h3><p class="notice">O hóspede só pode consultar a própria comanda lendo o QR Code do cartão físico do quarto.</p><button class="btn qr-btn" style="width:100%;padding:16px;font-size:16px" onclick="startQRScanner('guest')">📷 Ler QR Code do cartão</button><div id="guestPanel"></div></div></section>
 
         <section id="contestacoes" class="view"><div class="page-title"><div><h1>Contestações</h1><p>Analise os itens não reconhecidos pelos hóspedes.</p></div></div><div class="card" id="claims"></div></section>
 
@@ -504,8 +504,14 @@ function total(s){return(s.items||[]).reduce((a,i)=>(i.removed||i.status==="Esto
 function go(v){
  const allowed=currentRole==="recepcao"
    ?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]
-   :currentRole==="garcom"?["garcom"]:[];
- if(currentRole && !allowed.includes(v)) v=currentRole==="garcom"?"garcom":"dashboard";
+   :currentRole==="garcom"
+   ?["garcom"]
+   :currentRole==="hospede"
+   ?["hospede"]
+   :[];
+ if(currentRole && !allowed.includes(v)){
+   v=currentRole==="garcom"?"garcom":currentRole==="hospede"?"hospede":"dashboard";
+ }
  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
  let t=document.getElementById(v);if(t)t.classList.add("active");
  document.querySelectorAll(".sidebar-nav button").forEach(x=>x.classList.toggle("active",x.dataset.v===v));
@@ -949,7 +955,11 @@ function handleQRResult(room){
  let gr=document.getElementById("guestRoom");if(!gr){gr=document.createElement("input");gr.type="hidden";gr.id="guestRoom";document.body.appendChild(gr)}
  gr.value=room;
  document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent="Hóspede · Quarto "+room;
- document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");go("hospede");openGuest();toast("Cartão C-"+room+" identificado.");
+ document.querySelectorAll("#nav button").forEach(b=>b.style.display="none");
+ document.querySelectorAll(".quick-grid").forEach(el=>el.style.display="none");
+ go("hospede");
+ openGuest();
+ toast("Cartão C-"+room+" identificado.");
 }
 function closeQRScanner(){
  if(qrAnimation)cancelAnimationFrame(qrAnimation);qrAnimation=null;
