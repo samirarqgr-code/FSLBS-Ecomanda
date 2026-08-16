@@ -533,8 +533,8 @@ async function checkout(id){
  let s=db.stays.find(x=>x.id===id);if(!s)return;if(db.claims.some(c=>c.stayId===id&&c.status==="Pendente"))return toast("Resolva as contestações antes do check-out.");
  if(!supabaseReady)return toast("Banco ainda não conectado.");
  try{
-   const {error:se}=await sbClient.from("hospedagens").update({status:"encerrada"}).eq("id",id);if(se)throw se;
-   const {error:ce}=await sbClient.from("comandas").update({status:"fechada",fechada_at:new Date().toISOString()}).eq("hospedagem_id",id);if(ce)throw ce;
+   const {error:se}=await sbClient.from("hospedagens").update({status:'finalizada'}).eq("id",id);if(se)throw se;
+   const {error:ce}=await sbClient.from("comandas").update({status:"finalizada",fechada_at:new Date().toISOString()}).eq("hospedagem_id",id);if(ce)throw ce;
    await loadFromSupabase();toast("Check-out finalizado. Cartão liberado.");
  }catch(e){console.error(e);toast("Não foi possível finalizar o check-out: "+(e.message||"verifique as permissões."));}
 }
