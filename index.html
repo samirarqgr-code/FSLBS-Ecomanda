@@ -750,7 +750,7 @@ async function loadFromSupabase(){
     const cmdByStay=Object.fromEntries((co.data||[]).map(x=>[x.hospedagem_id,x]));
     const itemsByCmd={};
     for(const x of (la.data||[])){
-      (itemsByCmd[x.comanda_id] ||= []).push({id:x.id,name:productById[x.produto_id]?.nome||"Produto",price:Number(x.preco_unitario||productById[x.produto_id]?.preco||0),qty:Number(x.quantidade||1),time:x.criado_at?new Date(x.criado_at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"—",staff:x.funcionario_id?"Equipe":"Garçom",place:x.local_venda||"—",status:x.status||"Normal"});
+      (itemsByCmd[x.comanda_id] ||= []).push({id:x.id,name:productById[x.produto_id]?.nome||"Produto",price:Number(x.preco_unitario||productById[x.produto_id]?.preco||0),qty:Number(x.quantidade||1),time:x.criado_at?new Date(x.criado_at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"—",staff:x.funcionario_id?"Equipe":"Garçom",place:x.local_venda||"—",status:x.status||"normal"});
     }
     db.rooms=rooms.map(x=>({room:String(x.numero),card:"C-"+x.numero,id:x.id}));
     if(db.rooms.length) ROOMS=db.rooms.map(x=>x.room);
