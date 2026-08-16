@@ -158,7 +158,13 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 }
 
 </style>
-<style>.qr-only-access{border:1px solid var(--line)}.qr-only-access .qr-btn{font-weight:700}</style></head>
+<style>.qr-only-access{border:1px solid var(--line)}.qr-only-access .qr-btn{font-weight:700}</style><style>
+@media(max-width:760px){
+  .topbar .profile{display:flex!important;align-items:center;gap:8px;min-width:0}
+  .topbar .profile>div:first-child{display:none}
+  .topbar .logout-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative;z-index:20;align-items:center;justify-content:center;padding:8px 10px}
+}
+</style></head>
 <body>
 
 <div id="loginScreen" class="login-screen">
@@ -371,7 +377,16 @@ function money(n){return "R$ "+Number(n||0).toFixed(2).replace(".",",")}
 function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2200)}
 function activeStay(room){return db.stays.find(s=>s.room===room&&s.active)}
 function total(s){return(s.items||[]).reduce((a,i)=>a+(i.status==="Estornado"?0:i.price*i.qty),0)}
-function go(v){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));let t=document.getElementById(v);if(t)t.classList.add("active");document.querySelectorAll(".sidebar-nav button").forEach(x=>x.classList.toggle("active",x.dataset.v===v));renderAll()}
+function go(v){
+ const allowed=currentRole==="recepcao"
+   ?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]
+   :currentRole==="garcom"?["garcom"]:[];
+ if(currentRole && !allowed.includes(v)) v=currentRole==="garcom"?"garcom":"dashboard";
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+ let t=document.getElementById(v);if(t)t.classList.add("active");
+ document.querySelectorAll(".sidebar-nav button").forEach(x=>x.classList.toggle("active",x.dataset.v===v));
+ renderAll();
+}
 document.querySelectorAll(".sidebar-nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
 
 function fillSelect(id,onlyActive=false){
@@ -569,8 +584,19 @@ function enterSystem(label,firstView){
  document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("roleLabel").textContent=label;configureAccess();go(firstView)
 }
 function configureAccess(){
- let allowed=currentRole==="recepcao"?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]:["garcom"];
- document.querySelectorAll("#nav button").forEach(btn=>btn.style.display=allowed.includes(btn.dataset.v)?"":"none")
+ const allowed=currentRole==="recepcao"
+   ?["dashboard","checkin","comandas","garcom","hospede","contestacoes","checkout","cartoes","produtos"]
+   :currentRole==="garcom"
+   ?["garcom"]
+   :[];
+ document.querySelectorAll(".sidebar-nav button").forEach(btn=>{
+   btn.style.display=allowed.includes(btn.dataset.v)?"":"none";
+ });
+ document.querySelectorAll(".quick-grid").forEach(el=>{
+   el.style.display=currentRole==="garcom"?"none":"";
+ });
+ const logoutBtn=document.querySelector(".logout-btn");
+ if(logoutBtn) logoutBtn.style.display=currentRole?"inline-flex":"none";
 }
 let qrStream=null,qrAnimation=null,qrScanTarget="guest",qrDetector=null,qrLastText="";
 
