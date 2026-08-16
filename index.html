@@ -265,6 +265,19 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 }
 </style>
 
+
+<style id="situacao-modal-style">
+#modalBox tr.consumo-removido td,
+#modalBox tr.consumo-removido td * {
+  color:#b42318 !important;
+}
+#modalBox tr.consumo-removido td {
+  background:#fff1f0 !important;
+}
+#modalBox tr.consumo-removido {
+  border-left:4px solid #b42318 !important;
+}
+</style>
 </head>
 <body>
 
@@ -588,10 +601,31 @@ async function createCheckin(){
 }
 function openOrder(room){
  let s=activeStay(room);if(!s)return;
+ const situacao=(i)=>{
+   if(i.removed || String(i.status||"").toLowerCase()==="estornado") return {label:"Removido",cls:"situacao-removido"};
+   const cs=String(i.claimStatus||"").toLowerCase();
+   if(cs==="pendente") return {label:"Em análise",cls:"situacao-analise"};
+   if(cs==="resolvida_mantida") return {label:"Mantido",cls:"situacao-mantido"};
+   if(cs==="resolvida_estornada") return {label:"Removido",cls:"situacao-removido"};
+   return {label:"Lançado",cls:"situacao-lancado"};
+ };
+ const rows=(s.items||[]).map(i=>{
+   const st=situacao(i);
+   const red=st.label==="Removido";
+   return `<tr class="${red?"consumo-removido":""}">
+     <td>${i.time}</td>
+     <td>${i.name}</td>
+     <td>${i.qty}</td>
+     <td>${money(i.price*i.qty)}</td>
+     <td>${i.staff||"Garçom"}</td>
+     <td><span class="situacao-badge ${st.cls}">${st.label}</span></td>
+   </tr>`;
+ }).join("")||`<tr><td colspan="6">Nenhum consumo.</td></tr>`;
+
  document.getElementById("modalBox").innerHTML=`<button style="float:right;background:transparent;color:#777;font-size:24px" onclick="closeModal()">×</button><h2>Quarto ${room}</h2><p>${s.name} · ${s.count} hóspede(s)</p>
- <table><thead><tr><th>Horário</th><th>Produto</th><th>Qtd.</th><th>Valor</th><th>Funcionário</th><th>Situação</th></tr></thead><tbody>${(s.items||[]).map(i=>`<tr><td>${i.time}</td><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price*i.qty)}</td><td>${i.staff}</td></tr>`).join("")||`<tr><td colspan="5">Nenhum consumo.</td></tr>`}</tbody></table><h3 class="right">Total: ${money(total(s))}</h3>`;
+ <div style="overflow:auto"><table><thead><tr><th>Horário</th><th>Produto</th><th>Qtd.</th><th>Valor</th><th>Funcionário</th><th>Situação</th></tr></thead><tbody>${rows}</tbody></table></div><h3 class="right">Total: ${money(total(s))}</h3>`;
  document.getElementById("modal").classList.add("open");
-}
+} 
 function closeModal(){document.getElementById("modal").classList.remove("open")}
 function renderOrders(){
  let a=db.stays.filter(s=>s.active);document.getElementById("orders").innerHTML=a.length?`<table><thead><tr><th>Quarto</th><th>Hóspede</th><th>Cartão</th><th>Consumo</th><th></th></tr></thead><tbody>${a.map(s=>`<tr><td><b>${s.room}</b></td><td>${s.name}</td><td>${s.card}</td><td>${money(total(s))}</td><td><button onclick="openOrder('${s.room}')">Abrir</button></td></tr>`).join("")}</tbody></table>`:"Nenhuma comanda aberta.";
@@ -862,12 +896,15 @@ async function loadFromSupabase(){
     const productById=Object.fromEntries((pr.data||[]).map(x=>[x.id,x]));
     const cmdByStay=Object.fromEntries((co.data||[]).map(x=>[x.hospedagem_id,x]));
     const removalByItem={};
+    const claimByItem={};
     for(const x of (ct.data||[])){
       if(String(x.motivo||"").startsWith("Exclusão pelo garçom:")) removalByItem[x.lancamento_id]=x;
+      else claimByItem[x.lancamento_id]=x;
     }
     const itemsByCmd={};
     for(const x of (la.data||[])){
       const rem=removalByItem[x.id];
+      const claim=claimByItem[x.id];
       (itemsByCmd[x.comanda_id] ||= []).push({
         id:x.id,
         name:productById[x.produto_id]?.nome||"Produto",
@@ -878,7 +915,8 @@ async function loadFromSupabase(){
         staff:x.funcionario_id?"Equipe":"Garçom",
         place:x.local_venda||"—",
         status:x.status||"normal",
-        removed:!!rem,
+        removed:!!rem || String(x.status||"").toLowerCase()==="estornado",
+        claimStatus:claim?.status||"",
         removalReason:rem?String(rem.motivo||"").replace(/^Exclusão pelo garçom:\s*/i,""):"",
         removedAt:rem?.resolvido_at||null
       });
