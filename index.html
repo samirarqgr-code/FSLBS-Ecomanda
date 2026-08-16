@@ -689,7 +689,6 @@ function logout(){
 }
 bootSupabase();
 let syncTimer=null;
-let syncBusy=false;
 async function syncFromSupabase(){
   if(syncBusy || !supabaseReady) return;
   syncBusy=true;
