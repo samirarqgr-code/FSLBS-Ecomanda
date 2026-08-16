@@ -540,7 +540,7 @@ async function createCheckin(){
    const {data:h,error:eh}=await sbClient.from("hospedes").insert({nome:name}).select("id,nome").maybeSingle(); if(eh)throw eh; if(!h)throw new Error("O hóspede não foi retornado pelo Supabase após o cadastro.");
    const {data:stay,error:es}=await sbClient.from("hospedagens").insert({quarto_id:q.id,hospede_titular_id:h.id,data_entrada:dateIn,data_saida:dateOut,status:"ativa",observacoes:document.getElementById("ciObs").value||null}).select("*").maybeSingle(); if(es)throw es; if(!stay)throw new Error("A hospedagem não foi retornada pelo Supabase após o cadastro.");
    const {error:linkErr}=await sbClient.from("hospedagem_hospedes").insert({hospedagem_id:stay.id,hospede_id:h.id}); if(linkErr)throw linkErr;
-   const {error:comErr}=await sbClient.from("comandas").insert({hospedagem_id:stay.id,status:"aberta"}); if(comErr)throw comErr;
+   const {error:comErr}=await sbClient.from("comandas").insert({hospedagem_id:stay.id,status:"pendente"}); if(comErr)throw comErr;
    // Garante que o cartão permanente do quarto exista.
    const {data:card}=await sbClient.from("cartoes").select("id").eq("quarto_id",q.id).eq("ativo",true).maybeSingle();
    if(!card)await sbClient.from("cartoes").insert({codigo:"C-"+room,quarto_id:q.id,ativo:true});
