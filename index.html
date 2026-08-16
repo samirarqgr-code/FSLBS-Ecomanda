@@ -725,23 +725,69 @@ async function removeWaiterConsumption(stayId,itemId){
  }
 }
 async function addConsumption(room){
- let s=activeStay(room),p=db.products.find(x=>x.id===document.getElementById("wProd").value),qty=Number(document.getElementById("wQty").value||1);if(!p)return;
+ let s=activeStay(room),p=db.products.find(x=>x.id===document.getElementById("wProd").value),qty=Number(document.getElementById("wQty").value||1);
+ if(!s)return toast("Selecione um quarto com hospedagem ativa.");
+ if(!p)return toast("Selecione um produto.");
+ if(!Number.isFinite(qty)||qty<1)return toast("Informe uma quantidade válida.");
  if(!supabaseReady)return toast("Banco ainda não conectado.");
  try{
-   let {data:cmd,error:ec}=await sbClient.from("comandas").select("id,status").eq("hospedagem_id",s.id).in("status",["aberta","pendente"]).order("created_at",{ascending:false}).limit(1).maybeSingle(); if(ec)throw ec;
-    if(!cmd)return toast("Esta hospedagem não possui comanda aberta.");
-    if(cmd.status==="pendente"){
-      const {error:openErr}=await sbClient.from("comandas").update({status:"aberta"}).eq("id",cmd.id);
-      if(openErr)throw openErr;
-      cmd.status="aberta";
-    }
+   // Procura qualquer comanda existente para esta hospedagem.
+   let {data:cmds,error:ec}=await sbClient.from("comandas")
+     .select("id,status,created_at")
+     .eq("hospedagem_id",s.id)
+     .order("created_at",{ascending:false})
+     .limit(10);
+   if(ec)throw ec;
+
+   let cmd=(cmds||[])[0];
+
+   // Se a hospedagem não tiver nenhuma comanda, cria uma automaticamente.
+   if(!cmd){
+     const {data:newCmd,error:createErr}=await sbClient.from("comandas")
+       .insert({hospedagem_id:s.id,status:"aberta"})
+       .select("id,status")
+       .single();
+     if(createErr)throw createErr;
+     cmd=newCmd;
+   }else if(String(cmd.status||"").toLowerCase()!=="aberta"){
+     // Para uma hospedagem ativa, a comanda precisa estar aberta.
+     const {data:opened,error:openErr}=await sbClient.from("comandas")
+       .update({status:"aberta",fechada_at:null})
+       .eq("id",cmd.id)
+       .select("id,status")
+       .single();
+     if(openErr)throw openErr;
+     cmd=opened;
+   }
+
    let staffId=null;
    const staffName=(document.getElementById("wStaff").value||"Garçom").trim();
-   const {data:prof}=await sbClient.from("perfis").select("id,nome,funcao").eq("funcao","garcom").eq("ativo",true).limit(1).maybeSingle();
+   const {data:prof}=await sbClient.from("perfis")
+     .select("id,nome,funcao")
+     .eq("funcao","garcom")
+     .eq("ativo",true)
+     .limit(1)
+     .maybeSingle();
    if(prof)staffId=prof.id;
-   const {error:e}=await sbClient.from("lancamentos").insert({comanda_id:cmd.id,produto_id:p.id,quantidade:qty,preco_unitario:p.price,funcionario_id:staffId,local_venda:document.getElementById("wPlace").value||"Restaurante",status:"normal"}); if(e)throw e;
-   await loadFromSupabase(); toast("Consumo lançado e registrado no histórico."); openWaiter();
- }catch(e){console.error(e);toast("Não foi possível lançar o consumo: "+(e.message||"verifique as permissões."));}
+
+   const {error:e}=await sbClient.from("lancamentos").insert({
+     comanda_id:cmd.id,
+     produto_id:p.id,
+     quantidade:qty,
+     preco_unitario:p.price,
+     funcionario_id:staffId,
+     local_venda:document.getElementById("wPlace").value||"Restaurante",
+     status:"normal"
+   });
+   if(e)throw e;
+
+   await loadFromSupabase();
+   toast("Consumo lançado e registrado no histórico.");
+   openWaiter();
+ }catch(e){
+   console.error("Lançamento:",e);
+   toast("Não foi possível lançar o consumo: "+(e.message||"verifique as permissões."));
+ }
 }
 function openGuest(){
  let room=document.getElementById("guestRoom")?.value,s=room&&activeStay(room);if(!s)return toast("Leia o QR Code do cartão para acessar a comanda.");
