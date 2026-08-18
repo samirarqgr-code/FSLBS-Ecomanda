@@ -337,8 +337,8 @@ body.guest-only #app #hospede .page-title {
       <h2>Login de funcionário</h2>
       <div class="field"><label>E-mail</label><input id="loginEmail" type="email" placeholder="seuemail@fslbs.com"></div>
       <div class="field"><label>Senha</label><input id="loginPassword" type="password" placeholder="Senha"></div>
-      <button class="login-button" onclick="loginStaff()">Entrar</button>
-      <div class="login-demo"><strong>Login de demonstração</strong><br>Recepção: <b>recepcao@fslbs.com</b><br>Garçom: <b>garcom@fslbs.com</b><br>Senha: <b>123456</b></div>
+      <button id="staffLoginButton" class="login-button" onclick="loginStaff()">Entrar</button>
+      <div class="login-demo">Use o e-mail e a senha individuais cadastrados para a equipe. O acesso é validado pelo Supabase.</div>
     </div>
 
     <div id="guestAccess" class="login-form" style="display:none">
@@ -898,11 +898,34 @@ function renderProducts(){document.getElementById("productList").innerHTML=db.pr
 function showStaffLogin(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="block";document.getElementById("guestAccess").style.display="none"}
 function showGuestAccess(){document.querySelector(".login-options").style.display="none";document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="block";fillGuestLoginRooms()}
 function backToLogin(){document.getElementById("staffLogin").style.display="none";document.getElementById("guestAccess").style.display="none";document.querySelector(".login-options").style.display="grid"}
-function loginStaff(){
- let email=document.getElementById("loginEmail").value.trim().toLowerCase(),password=document.getElementById("loginPassword").value;if(!email||!password)return toast("Informe e-mail e senha.");if(password!=="123456")return toast("Senha incorreta.");
- if(email==="recepcao@fslbs.com"){currentRole="recepcao";enterSystem("Recepção / Administração","dashboard");return}
- if(email==="garcom@fslbs.com"){currentRole="garcom";enterSystem("Garçom","garcom");return}
- toast("E-mail não cadastrado.")
+function staffRoleFromUser(user){
+ const role=String(user?.app_metadata?.role||"").trim().toLowerCase();
+ if(["recepcao","admin","administracao","administrador"].includes(role))return "recepcao";
+ if(["garcom","garçon","garçom"].includes(role))return "garcom";
+ return null;
+}
+async function loginStaff(){
+ const email=document.getElementById("loginEmail").value.trim().toLowerCase();
+ const password=document.getElementById("loginPassword").value;
+ const button=document.getElementById("staffLoginButton");
+ if(!email||!password)return toast("Informe e-mail e senha.");
+ button.disabled=true;button.textContent="Entrando…";
+ try{
+   const {data,error}=await sbClient.auth.signInWithPassword({email,password});
+   if(error)throw error;
+   const role=staffRoleFromUser(data.user);
+   if(!role){
+     await sbClient.auth.signOut();
+     throw new Error("Este usuário não possui um perfil de equipe autorizado.");
+   }
+   currentRole=role;
+   enterSystem(role==="recepcao"?"Recepção / Administração":"Garçom",role==="recepcao"?"dashboard":"garcom");
+ }catch(error){
+   console.error("Login:",error);
+   toast("Não foi possível entrar. Verifique seus dados ou peça acesso à administração.");
+ }finally{
+   button.disabled=false;button.textContent="Entrar";
+ }
 }
 function enterSystem(label,firstView){
  document.getElementById("loginScreen").style.display="none";
@@ -1067,9 +1090,16 @@ async function bootSupabase(){
   // Mantém a interface disponível enquanto o banco carrega.
   renderAll();
   await loadFromSupabase();
+  const {data:{user},error}=await sbClient.auth.getUser();
+  if(error||!user)return;
+  const role=staffRoleFromUser(user);
+  if(!role){await sbClient.auth.signOut();return}
+  currentRole=role;
+  enterSystem(role==="recepcao"?"Recepção / Administração":"Garçom",role==="recepcao"?"dashboard":"garcom");
 }
 
-function logout(){
+async function logout(){
+ sbClient.auth.signOut().catch(error=>console.error("Logout:",error));
  document.body.classList.remove("guest-only");
  currentRole=null;currentGuestRoom=null;
  document.getElementById("app").classList.remove("garcom-mode");
