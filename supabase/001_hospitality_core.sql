@@ -236,5 +236,23 @@ where not exists (
 );
 
 -- =========================================================
--- FIM
+-- SEGURANÇA: RLS
+-- As novas tabelas ficam fechadas até as políticas de acesso
+-- serem definidas para cada perfil do sistema.
 -- =========================================================
+
+alter table public.fslbs_grupos enable row level security;
+alter table public.fslbs_grupo_membros enable row level security;
+alter table public.fslbs_reservas enable row level security;
+alter table public.fslbs_experiencias enable row level security;
+alter table public.fslbs_agendamentos_experiencias enable row level security;
+alter table public.fslbs_notificacoes enable row level security;
+alter table public.fslbs_solicitacoes enable row level security;
+alter table public.fslbs_manutencoes enable row level security;
+alter table public.fslbs_portaria enable row level security;
+alter table public.fslbs_empresas enable row level security;
+alter table public.fslbs_eventos_corporativos enable row level security;
+alter table public.fslbs_projetos_escolares enable row level security;
+alter table public.fslbs_relatorios_solicitacoes enable row level security;
+
+-- FIM
